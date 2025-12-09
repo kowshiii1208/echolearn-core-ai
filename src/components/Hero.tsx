@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sparkles, BookOpen, Brain } from "lucide-react";
 
@@ -68,12 +69,16 @@ export const Hero = () => {
           className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in"
           style={{ animationDelay: "0.3s" }}
         >
-          <Button variant="hero" size="xl">
-            Start Learning Free
-          </Button>
-          <Button variant="heroSecondary" size="xl">
-            See How It Works
-          </Button>
+          <Link to="/auth">
+            <Button variant="hero" size="xl">
+              Start Learning Free
+            </Button>
+          </Link>
+          <a href="#how-it-works">
+            <Button variant="heroSecondary" size="xl">
+              See How It Works
+            </Button>
+          </a>
         </div>
 
         {/* Trust indicators */}
