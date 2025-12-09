@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Sparkles } from "lucide-react";
 
@@ -10,14 +11,14 @@ export const Navbar = () => {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-serif text-xl font-bold text-foreground">
               EchoLearn
             </span>
-          </a>
+          </Link>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8">
@@ -34,12 +35,16 @@ export const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm">
-              Log In
-            </Button>
-            <Button size="sm">
-              Get Started
-            </Button>
+            <Link to="/auth">
+              <Button variant="ghost" size="sm">
+                Log In
+              </Button>
+            </Link>
+            <Link to="/auth">
+              <Button size="sm">
+                Get Started
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -65,12 +70,16 @@ export const Navbar = () => {
                 Pricing
               </a>
               <div className="flex gap-3 pt-4 border-t border-border">
-                <Button variant="ghost" size="sm" className="flex-1">
-                  Log In
-                </Button>
-                <Button size="sm" className="flex-1">
-                  Get Started
-                </Button>
+                <Link to="/auth" className="flex-1">
+                  <Button variant="ghost" size="sm" className="w-full">
+                    Log In
+                  </Button>
+                </Link>
+                <Link to="/auth" className="flex-1">
+                  <Button size="sm" className="w-full">
+                    Get Started
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 
@@ -28,13 +29,15 @@ export const CTA = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button 
-                size="xl" 
-                className="bg-background text-primary hover:bg-background/90 shadow-elevated"
-              >
-                Get Started Free
-                <ArrowRight className="w-5 h-5 ml-1" />
-              </Button>
+              <Link to="/auth">
+                <Button 
+                  size="xl" 
+                  className="bg-background text-primary hover:bg-background/90 shadow-elevated"
+                >
+                  Get Started Free
+                  <ArrowRight className="w-5 h-5 ml-1" />
+                </Button>
+              </Link>
               <span className="text-sm text-primary-foreground/60">
                 No credit card required
               </span>
