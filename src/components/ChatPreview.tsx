@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Send, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,25 +24,30 @@ const demoMessages = [
 export const ChatPreview = () => {
   const [visibleMessages, setVisibleMessages] = useState<typeof demoMessages>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const messageIndexRef = useRef(0);
 
   useEffect(() => {
-    let messageIndex = 0;
-    
     const showNextMessage = () => {
-      if (messageIndex < demoMessages.length) {
-        if (demoMessages[messageIndex].role === "assistant") {
-          setIsTyping(true);
-          setTimeout(() => {
-            setIsTyping(false);
-            setVisibleMessages(prev => [...prev, demoMessages[messageIndex]]);
-            messageIndex++;
-            setTimeout(showNextMessage, 2000);
-          }, 1500);
-        } else {
-          setVisibleMessages(prev => [...prev, demoMessages[messageIndex]]);
-          messageIndex++;
-          setTimeout(showNextMessage, 1000);
-        }
+      const currentIndex = messageIndexRef.current;
+      
+      if (currentIndex >= demoMessages.length) {
+        return; // Stop when all messages shown
+      }
+
+      const currentMessage = demoMessages[currentIndex];
+      
+      if (currentMessage.role === "assistant") {
+        setIsTyping(true);
+        setTimeout(() => {
+          setIsTyping(false);
+          setVisibleMessages(prev => [...prev, currentMessage]);
+          messageIndexRef.current += 1;
+          setTimeout(showNextMessage, 2000);
+        }, 1500);
+      } else {
+        setVisibleMessages(prev => [...prev, currentMessage]);
+        messageIndexRef.current += 1;
+        setTimeout(showNextMessage, 1000);
       }
     };
 
