@@ -3,8 +3,9 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Trash2, Calendar, ExternalLink } from "lucide-react";
+import { FileText, Trash2, Calendar, ExternalLink, BookOpen, Brain, Image } from "lucide-react";
 import { format } from "date-fns";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ScannedDocument {
   id: string;
@@ -14,160 +15,316 @@ interface ScannedDocument {
   created_at: string;
 }
 
+interface StudyNote {
+  id: string;
+  title: string;
+  content: string | null;
+  tags: string[] | null;
+  created_at: string;
+}
+
 interface NotesPanelProps {
   user: User;
 }
 
 export const NotesPanel = ({ user }: NotesPanelProps) => {
   const [documents, setDocuments] = useState<ScannedDocument[]>([]);
+  const [studyNotes, setStudyNotes] = useState<StudyNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDoc, setSelectedDoc] = useState<ScannedDocument | null>(null);
+  const [selectedNote, setSelectedNote] = useState<StudyNote | null>(null);
+  const [activeTab, setActiveTab] = useState("study-notes");
   const { toast } = useToast();
 
   useEffect(() => {
-    loadDocuments();
+    loadData();
   }, [user.id]);
 
-  const loadDocuments = async () => {
+  const loadData = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("scanned_documents")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+    
+    const [docsResult, notesResult] = await Promise.all([
+      supabase
+        .from("scanned_documents")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("study_notes")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+    ]);
 
-    if (error) {
-      toast({ title: "Error", description: "Failed to load notes", variant: "destructive" });
+    if (docsResult.error) {
+      console.error("Error loading documents:", docsResult.error);
     } else {
-      setDocuments(data || []);
+      setDocuments(docsResult.data || []);
     }
+
+    if (notesResult.error) {
+      console.error("Error loading study notes:", notesResult.error);
+    } else {
+      setStudyNotes(notesResult.data || []);
+    }
+
     setLoading(false);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteDocument = async (id: string) => {
     const { error } = await supabase.from("scanned_documents").delete().eq("id", id);
+    
+    if (error) {
+      toast({ title: "Error", description: "Failed to delete document", variant: "destructive" });
+    } else {
+      setDocuments(prev => prev.filter(d => d.id !== id));
+      if (selectedDoc?.id === id) setSelectedDoc(null);
+      toast({ title: "Deleted", description: "Document has been removed" });
+    }
+  };
+
+  const handleDeleteNote = async (id: string) => {
+    const { error } = await supabase.from("study_notes").delete().eq("id", id);
     
     if (error) {
       toast({ title: "Error", description: "Failed to delete note", variant: "destructive" });
     } else {
-      setDocuments(prev => prev.filter(d => d.id !== id));
-      if (selectedDoc?.id === id) setSelectedDoc(null);
+      setStudyNotes(prev => prev.filter(n => n.id !== id));
+      if (selectedNote?.id === id) setSelectedNote(null);
       toast({ title: "Deleted", description: "Note has been removed" });
     }
+  };
+
+  const renderMarkdownContent = (content: string) => {
+    // Simple markdown-like rendering for headers and separators
+    return content.split('\n').map((line, i) => {
+      if (line.startsWith('## ')) {
+        return <h3 key={i} className="text-lg font-semibold text-foreground mt-4 mb-2">{line.replace('## ', '')}</h3>;
+      }
+      if (line === '---') {
+        return <hr key={i} className="my-4 border-border" />;
+      }
+      return <p key={i} className="text-sm text-foreground/90 leading-relaxed">{line}</p>;
+    });
   };
 
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-6">
         <h2 className="text-2xl font-display font-bold text-foreground">My Notes</h2>
-        <p className="text-muted-foreground">All your scanned documents in one place</p>
+        <p className="text-muted-foreground">All your study notes and scanned documents</p>
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-        </div>
-      ) : documents.length === 0 ? (
-        <div className="text-center py-12 bg-card border border-border rounded-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
-            <FileText className="w-8 h-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">No notes yet</h3>
-          <p className="text-muted-foreground">Scan your first document to get started</p>
-        </div>
-      ) : (
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Documents list */}
-          <div className="lg:col-span-1 space-y-3">
-            {documents.map((doc) => (
-              <button
-                key={doc.id}
-                onClick={() => setSelectedDoc(doc)}
-                className={`w-full text-left p-4 rounded-xl border transition-all ${
-                  selectedDoc?.id === doc.id
-                    ? "border-primary bg-primary/5"
-                    : "border-border bg-card hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-foreground truncate">{doc.title}</h4>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                      <Calendar className="w-3 h-3" />
-                      {format(new Date(doc.created_at), "MMM d, yyyy")}
-                    </div>
-                  </div>
-                  {doc.image_url && (
-                    <img
-                      src={doc.image_url}
-                      alt=""
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-6 bg-secondary">
+          <TabsTrigger value="study-notes" className="gap-2">
+            <Brain className="w-4 h-4" />
+            Study Notes ({studyNotes.length})
+          </TabsTrigger>
+          <TabsTrigger value="scanned-docs" className="gap-2">
+            <Image className="w-4 h-4" />
+            Scanned Documents ({documents.length})
+          </TabsTrigger>
+        </TabsList>
 
-          {/* Document detail */}
-          <div className="lg:col-span-2">
-            {selectedDoc ? (
-              <div className="bg-card border border-border rounded-2xl p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold text-foreground">{selectedDoc.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(selectedDoc.created_at), "MMMM d, yyyy 'at' h:mm a")}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    {selectedDoc.image_url && (
+        <TabsContent value="study-notes">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+            </div>
+          ) : studyNotes.length === 0 ? (
+            <div className="text-center py-12 bg-card border border-border rounded-2xl">
+              <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">No study notes yet</h3>
+              <p className="text-muted-foreground">Scan an image and save the AI explanation as a note</p>
+            </div>
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1 space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                {studyNotes.map((note) => (
+                  <button
+                    key={note.id}
+                    onClick={() => setSelectedNote(note)}
+                    className={`w-full text-left p-4 rounded-xl border transition-all ${
+                      selectedNote?.id === note.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-card hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Brain className="w-4 h-4 text-primary flex-shrink-0" />
+                          <h4 className="font-medium text-foreground truncate">{note.title}</h4>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Calendar className="w-3 h-3" />
+                          {format(new Date(note.created_at), "MMM d, yyyy")}
+                        </div>
+                        {note.tags && note.tags.length > 0 && (
+                          <div className="flex gap-1 mt-2 flex-wrap">
+                            {note.tags.map((tag, i) => (
+                              <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="lg:col-span-2">
+                {selectedNote ? (
+                  <div className="bg-card border border-border rounded-2xl p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-xl font-semibold text-foreground">{selectedNote.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(selectedNote.created_at), "MMMM d, yyyy 'at' h:mm a")}
+                        </p>
+                      </div>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(selectedDoc.image_url!, "_blank")}
+                        onClick={() => handleDeleteNote(selectedNote.id)}
+                        className="text-destructive hover:text-destructive"
                       >
-                        <ExternalLink className="w-4 h-4 mr-1" />
-                        View Image
+                        <Trash2 className="w-4 h-4" />
                       </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(selectedDoc.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+                    </div>
 
-                {selectedDoc.image_url && (
-                  <img
-                    src={selectedDoc.image_url}
-                    alt={selectedDoc.title}
-                    className="w-full max-h-64 object-contain rounded-lg bg-secondary mb-4"
-                  />
+                    <div className="bg-secondary/50 rounded-xl p-4 max-h-[500px] overflow-y-auto">
+                      {selectedNote.content ? (
+                        <div className="space-y-1">
+                          {renderMarkdownContent(selectedNote.content)}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground">No content</p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-card border border-border rounded-2xl min-h-[300px]">
+                    <BookOpen className="w-12 h-12 text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">Select a note to view its contents</p>
+                  </div>
                 )}
+              </div>
+            </div>
+          )}
+        </TabsContent>
 
-                <div className="prose prose-sm max-w-none">
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Extracted Content</h4>
-                  <div className="bg-secondary/50 rounded-xl p-4 max-h-96 overflow-y-auto">
-                    <p className="whitespace-pre-wrap text-foreground text-sm">
-                      {selectedDoc.extracted_text || "No text extracted"}
-                    </p>
+        <TabsContent value="scanned-docs">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+            </div>
+          ) : documents.length === 0 ? (
+            <div className="text-center py-12 bg-card border border-border rounded-2xl">
+              <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">No scanned documents yet</h3>
+              <p className="text-muted-foreground">Scan your first document to get started</p>
+            </div>
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1 space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                {documents.map((doc) => (
+                  <button
+                    key={doc.id}
+                    onClick={() => setSelectedDoc(doc)}
+                    className={`w-full text-left p-4 rounded-xl border transition-all ${
+                      selectedDoc?.id === doc.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-card hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-foreground truncate">{doc.title}</h4>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                          <Calendar className="w-3 h-3" />
+                          {format(new Date(doc.created_at), "MMM d, yyyy")}
+                        </div>
+                      </div>
+                      {doc.image_url && (
+                        <img
+                          src={doc.image_url}
+                          alt=""
+                          className="w-12 h-12 rounded-lg object-cover"
+                        />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="lg:col-span-2">
+                {selectedDoc ? (
+                  <div className="bg-card border border-border rounded-2xl p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-xl font-semibold text-foreground">{selectedDoc.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(selectedDoc.created_at), "MMMM d, yyyy 'at' h:mm a")}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        {selectedDoc.image_url && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(selectedDoc.image_url!, "_blank")}
+                          >
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            View Image
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteDocument(selectedDoc.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {selectedDoc.image_url && (
+                      <img
+                        src={selectedDoc.image_url}
+                        alt={selectedDoc.title}
+                        className="w-full max-h-64 object-contain rounded-lg bg-secondary mb-4"
+                      />
+                    )}
+
+                    <div className="prose prose-sm max-w-none">
+                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Extracted Content</h4>
+                      <div className="bg-secondary/50 rounded-xl p-4 max-h-96 overflow-y-auto">
+                        <p className="whitespace-pre-wrap text-foreground text-sm">
+                          {selectedDoc.extracted_text || "No text extracted"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-card border border-border rounded-2xl min-h-[300px]">
+                    <FileText className="w-12 h-12 text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">Select a document to view its contents</p>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-card border border-border rounded-2xl">
-                <FileText className="w-12 h-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Select a note to view its contents</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
