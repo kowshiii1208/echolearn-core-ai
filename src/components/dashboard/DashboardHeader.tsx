@@ -1,9 +1,10 @@
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Menu, LogOut } from "lucide-react";
+import { BookOpen, Menu, LogOut, Moon, Sun } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
 
 interface DashboardHeaderProps {
   user: User;
@@ -14,11 +15,16 @@ interface DashboardHeaderProps {
 export const DashboardHeader = ({ user, sidebarOpen, setSidebarOpen }: DashboardHeaderProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast({ title: "Signed out", description: "See you next time!" });
     navigate("/");
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
   const displayName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Student";
@@ -43,7 +49,18 @@ export const DashboardHeader = ({ user, sidebarOpen, setSidebarOpen }: Dashboard
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          className="rounded-full"
+        >
+          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+
         <div className="hidden md:flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
             <span className="text-sm font-medium text-primary">
