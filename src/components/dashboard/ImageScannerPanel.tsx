@@ -17,6 +17,7 @@ export const ImageScannerPanel = ({ user }: ImageScannerPanelProps) => {
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isExplaining, setIsExplaining] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [title, setTitle] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -195,29 +196,40 @@ export const ImageScannerPanel = ({ user }: ImageScannerPanelProps) => {
   };
 
   const handleSaveExplanationAsNote = async () => {
-    if (!aiExplanation) return;
+    if (!aiExplanation) {
+      toast({ title: "No explanation", description: "Please wait for AI explanation to complete", variant: "destructive" });
+      return;
+    }
 
+    setIsSaving(true);
     try {
-      const noteTitle = title || "AI Explanation";
+      const noteTitle = title.trim() || "AI Explanation - " + new Date().toLocaleDateString();
       const noteContent = `## Original Content\n${extractedText}\n\n---\n\n## AI Explanation\n${aiExplanation}`;
 
-      const { error } = await supabase.from("study_notes").insert({
+      const { data, error } = await supabase.from("study_notes").insert({
         user_id: user.id,
         title: noteTitle,
         content: noteContent,
         tags: ["ai-explained", "scan"],
-      });
+      }).select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Save error:", error);
+        throw error;
+      }
 
-      toast({ title: "Note saved!", description: "AI explanation saved to your study notes" });
+      console.log("Note saved successfully:", data);
+      toast({ title: "Note saved!", description: "AI explanation saved to your study notes. Check 'My Notes' to view it." });
       handleClear();
     } catch (error: any) {
+      console.error("Failed to save note:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to save note",
+        title: "Error saving note",
+        description: error.message || "Failed to save note. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -346,10 +358,19 @@ export const ImageScannerPanel = ({ user }: ImageScannerPanelProps) => {
                   variant="hero" 
                   className="w-full" 
                   onClick={handleSaveExplanationAsNote}
-                  disabled={isExplaining || !aiExplanation}
+                  disabled={isExplaining || !aiExplanation || isSaving}
                 >
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Save as Study Note
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      Save as Study Note
+                    </>
+                  )}
                 </Button>
                 <div className="flex gap-2">
                   <Button 
