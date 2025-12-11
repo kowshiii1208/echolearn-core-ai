@@ -4,11 +4,12 @@ import {
   ScanLine, 
   FileText, 
   Home,
-  X
+  X,
+  Gamepad2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type ActivePanel = "welcome" | "chat" | "scanner" | "notes";
+type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games";
 
 interface DashboardSidebarProps {
   activePanel: ActivePanel;
@@ -22,6 +23,7 @@ const menuItems = [
   { id: "chat" as const, label: "AI Tutor", icon: MessageSquare },
   { id: "scanner" as const, label: "Scan Notes", icon: ScanLine },
   { id: "notes" as const, label: "My Notes", icon: FileText },
+  { id: "games" as const, label: "Brain Games", icon: Gamepad2 },
 ];
 
 export const DashboardSidebar = ({ 

@@ -8,8 +8,9 @@ import { AIChatPanel } from "@/components/dashboard/AIChatPanel";
 import { ImageScannerPanel } from "@/components/dashboard/ImageScannerPanel";
 import { NotesPanel } from "@/components/dashboard/NotesPanel";
 import { WelcomePanel } from "@/components/dashboard/WelcomePanel";
+import { GamesPanel } from "@/components/dashboard/GamesPanel";
 
-type ActivePanel = "welcome" | "chat" | "scanner" | "notes";
+type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -79,6 +80,7 @@ const Dashboard = () => {
           {activePanel === "chat" && <AIChatPanel user={user} />}
           {activePanel === "scanner" && <ImageScannerPanel user={user} />}
           {activePanel === "notes" && <NotesPanel user={user} />}
+          {activePanel === "games" && <GamesPanel />}
         </main>
       </div>
     </div>
