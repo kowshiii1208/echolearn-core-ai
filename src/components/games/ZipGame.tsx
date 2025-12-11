@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { RefreshCw, CheckCircle, Undo } from "lucide-react";
+import { RefreshCw, CheckCircle, Undo, Clock, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -10,11 +10,9 @@ type GridSize = 5 | 6 | 7;
 const generateZipPuzzle = (size: GridSize): { start: [number, number]; end: [number, number]; grid: number[][] } => {
   const grid = Array(size).fill(null).map(() => Array(size).fill(0));
   
-  // Generate a valid path through the grid
   const path: [number, number][] = [];
   const visited = new Set<string>();
   
-  // Start from a random position
   const startRow = Math.floor(Math.random() * size);
   const startCol = Math.floor(Math.random() * size);
   path.push([startRow, startCol]);
@@ -24,7 +22,6 @@ const generateZipPuzzle = (size: GridSize): { start: [number, number]; end: [num
     [0, 1], [1, 0], [0, -1], [-1, 0]
   ];
   
-  // Try to create a long path
   let current = [startRow, startCol];
   const maxAttempts = size * size * 10;
   let attempts = 0;
@@ -47,7 +44,6 @@ const generateZipPuzzle = (size: GridSize): { start: [number, number]; end: [num
     }
     
     if (!moved) {
-      // Backtrack
       if (path.length > 1) {
         path.pop();
         const lastKey = `${current[0]}-${current[1]}`;
@@ -58,7 +54,6 @@ const generateZipPuzzle = (size: GridSize): { start: [number, number]; end: [num
     attempts++;
   }
   
-  // Mark start (1) and end (path length) on grid
   const start = path[0];
   const end = path[path.length - 1];
   grid[start[0]][start[1]] = 1;
@@ -72,18 +67,39 @@ export const ZipGame = () => {
   const [puzzle, setPuzzle] = useState<{ start: [number, number]; end: [number, number]; grid: number[][] } | null>(null);
   const [path, setPath] = useState<[number, number][]>([]);
   const [isComplete, setIsComplete] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [completionTime, setCompletionTime] = useState<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setElapsedTime(0);
+    timerRef.current = setInterval(() => {
+      setElapsedTime(prev => prev + 1);
+    }, 1000);
+  }, []);
+
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
 
   const initGame = useCallback(() => {
     const newPuzzle = generateZipPuzzle(size);
     setPuzzle(newPuzzle);
     setPath([newPuzzle.start]);
     setIsComplete(false);
-  }, [size]);
+    setCompletionTime(null);
+    startTimer();
+  }, [size, startTimer]);
 
   useEffect(() => {
     initGame();
-  }, [initGame]);
+    return () => stopTimer();
+  }, [initGame, stopTimer]);
 
   const isAdjacent = (pos1: [number, number], pos2: [number, number]): boolean => {
     const [r1, c1] = pos1;
@@ -94,25 +110,20 @@ export const ZipGame = () => {
   const handleCellClick = (row: number, col: number) => {
     if (isComplete || !puzzle) return;
     
-    const cellKey = `${row}-${col}`;
     const lastPos = path[path.length - 1];
     
-    // Check if clicking on the last cell in path (to undo)
     if (path.length > 1) {
       const prevPos = path[path.length - 2];
       if (prevPos[0] === row && prevPos[1] === col) {
-        // Undo last move
         setPath(path.slice(0, -1));
         return;
       }
     }
     
-    // Check if cell is already in path
     if (path.some(([r, c]) => r === row && c === col)) {
       return;
     }
     
-    // Check if adjacent to last position
     if (!isAdjacent(lastPos, [row, col])) {
       return;
     }
@@ -120,10 +131,11 @@ export const ZipGame = () => {
     const newPath = [...path, [row, col] as [number, number]];
     setPath(newPath);
     
-    // Check for win
     if (row === puzzle.end[0] && col === puzzle.end[1] && newPath.length === size * size) {
       setIsComplete(true);
-      toast({ title: "Congratulations!", description: "You completed the Zip puzzle!" });
+      setCompletionTime(elapsedTime);
+      stopTimer();
+      toast({ title: "⚡ Congratulations!", description: `You completed Zip in ${elapsedTime} seconds!` });
     }
   };
 
@@ -137,30 +149,10 @@ export const ZipGame = () => {
     return path.findIndex(([r, c]) => r === row && c === col);
   };
 
-  const getConnectionClass = (row: number, col: number): string => {
-    const idx = getPathIndex(row, col);
-    if (idx === -1) return "";
-    
-    const classes: string[] = [];
-    
-    // Check connections to adjacent cells in path
-    if (idx > 0) {
-      const [pr, pc] = path[idx - 1];
-      if (pr === row - 1) classes.push("border-t-primary border-t-4");
-      if (pr === row + 1) classes.push("border-b-primary border-b-4");
-      if (pc === col - 1) classes.push("border-l-primary border-l-4");
-      if (pc === col + 1) classes.push("border-r-primary border-r-4");
-    }
-    
-    if (idx < path.length - 1) {
-      const [nr, nc] = path[idx + 1];
-      if (nr === row - 1) classes.push("border-t-primary border-t-4");
-      if (nr === row + 1) classes.push("border-b-primary border-b-4");
-      if (nc === col - 1) classes.push("border-l-primary border-l-4");
-      if (nc === col + 1) classes.push("border-r-primary border-r-4");
-    }
-    
-    return classes.join(" ");
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
   };
 
   if (!puzzle) return null;
@@ -168,16 +160,30 @@ export const ZipGame = () => {
   const targetLength = size * size;
 
   return (
-    <Card className="p-6 max-w-lg mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Zip</h2>
-        <div className="flex gap-2">
+    <Card className="p-4 bg-gradient-to-br from-emerald-50 to-cyan-50 dark:from-emerald-950/30 dark:to-cyan-950/30 border-2 border-emerald-200 dark:border-emerald-800 shadow-lg">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="p-1.5 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500">
+          <Zap className="w-4 h-4 text-white" />
+        </div>
+        <h2 className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">Zip</h2>
+      </div>
+
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+          <Clock className="w-4 h-4 text-emerald-500" />
+          <span className="tabular-nums">{formatTime(completionTime ?? elapsedTime)}</span>
+        </div>
+        <div className="flex gap-1">
           {([5, 6, 7] as GridSize[]).map((s) => (
             <Button
               key={s}
               variant={size === s ? "default" : "outline"}
               size="sm"
               onClick={() => setSize(s)}
+              className={cn(
+                "text-xs h-7 px-2",
+                size === s && "bg-gradient-to-r from-emerald-500 to-cyan-500 border-0"
+              )}
             >
               {s}×{s}
             </Button>
@@ -185,24 +191,23 @@ export const ZipGame = () => {
         </div>
       </div>
 
-      <p className="text-sm text-muted-foreground mb-4">
-        Connect numbers from 1 to {targetLength} by drawing a path through adjacent cells. 
-        Visit every cell exactly once.
+      <p className="text-xs text-muted-foreground mb-2">
+        Connect 1 to {targetLength}. Visit every cell once.
       </p>
 
       {isComplete && (
-        <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-2 text-green-600">
-          <CheckCircle className="w-5 h-5" />
-          <span className="font-medium">Puzzle Completed!</span>
+        <div className="mb-3 p-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-lg flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+          <CheckCircle className="w-4 h-4" />
+          <span className="font-medium text-sm">Completed in {formatTime(completionTime!)}!</span>
         </div>
       )}
 
-      <div className="mb-4 text-sm text-muted-foreground">
-        Progress: {path.length} / {targetLength}
+      <div className="mb-3 text-sm font-medium text-muted-foreground">
+        Progress: <span className="text-emerald-600 dark:text-emerald-400">{path.length}</span> / {targetLength}
       </div>
 
       <div 
-        className="grid gap-0 border-2 border-foreground/30 mb-4 aspect-square"
+        className="grid gap-0.5 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner p-1 bg-foreground/10"
         style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
       >
         {Array(size).fill(null).map((_, rowIndex) =>
@@ -219,22 +224,22 @@ export const ZipGame = () => {
               <button
                 key={`${rowIndex}-${colIndex}`}
                 className={cn(
-                  "aspect-square flex items-center justify-center border border-border/50 transition-all text-sm font-bold relative",
-                  inPath && "bg-primary/20",
-                  isLastInPath && !isComplete && "bg-primary/40 ring-2 ring-primary",
-                  canClick && !isComplete && "hover:bg-primary/10 cursor-pointer",
-                  !canClick && !inPath && "cursor-not-allowed opacity-50",
-                  isStart && "bg-green-500/30",
-                  isEnd && "bg-red-500/30",
-                  getConnectionClass(rowIndex, colIndex)
+                  "aspect-square flex items-center justify-center rounded-sm transition-all text-sm font-bold relative shadow-sm",
+                  "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700",
+                  inPath && "from-emerald-300 to-cyan-300 dark:from-emerald-700 dark:to-cyan-700",
+                  isLastInPath && !isComplete && "ring-2 ring-emerald-500 from-emerald-400 to-cyan-400 dark:from-emerald-600 dark:to-cyan-600",
+                  canClick && !isComplete && "hover:from-emerald-200 hover:to-cyan-200 dark:hover:from-emerald-800 dark:hover:to-cyan-800 hover:scale-105 cursor-pointer",
+                  !canClick && !inPath && "opacity-60",
+                  isStart && "from-green-400 to-green-500 dark:from-green-600 dark:to-green-500",
+                  isEnd && "from-red-400 to-red-500 dark:from-red-600 dark:to-red-500"
                 )}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
                 disabled={isComplete}
               >
-                {isStart && <span className="text-green-600 dark:text-green-400">1</span>}
-                {isEnd && <span className="text-red-600 dark:text-red-400">{targetLength}</span>}
+                {isStart && <span className="text-white font-bold drop-shadow">1</span>}
+                {isEnd && <span className="text-white font-bold drop-shadow">{targetLength}</span>}
                 {inPath && !isStart && !isEnd && (
-                  <span className="text-primary text-xs">{pathIdx + 1}</span>
+                  <span className="text-emerald-800 dark:text-emerald-200 text-xs font-bold">{pathIdx + 1}</span>
                 )}
               </button>
             );
@@ -243,12 +248,21 @@ export const ZipGame = () => {
       </div>
 
       <div className="flex gap-2">
-        <Button variant="outline" onClick={initGame} className="flex-1">
-          <RefreshCw className="w-4 h-4 mr-2" />
-          New Game
+        <Button 
+          variant="outline" 
+          onClick={initGame} 
+          className="flex-1 text-xs h-8 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
+        >
+          <RefreshCw className="w-3 h-3 mr-1" />
+          New
         </Button>
-        <Button variant="outline" onClick={handleUndo} disabled={path.length <= 1 || isComplete}>
-          <Undo className="w-4 h-4 mr-2" />
+        <Button 
+          variant="outline" 
+          onClick={handleUndo} 
+          disabled={path.length <= 1 || isComplete}
+          className="text-xs h-8 border-cyan-300 dark:border-cyan-700 hover:bg-cyan-100 dark:hover:bg-cyan-900/50"
+        >
+          <Undo className="w-3 h-3 mr-1" />
           Undo
         </Button>
       </div>

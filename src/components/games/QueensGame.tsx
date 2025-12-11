@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { RefreshCw, Crown, CheckCircle } from "lucide-react";
+import { RefreshCw, Crown, CheckCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -10,7 +10,6 @@ type BoardSize = 4 | 5 | 6 | 8;
 const generateColorRegions = (size: BoardSize): number[][] => {
   const regions = Array(size).fill(null).map(() => Array(size).fill(-1));
   
-  // Simple region generation - create contiguous regions
   for (let i = 0; i < size; i++) {
     const startRow = Math.floor(Math.random() * size);
     const startCol = Math.floor(Math.random() * size);
@@ -34,11 +33,9 @@ const generateColorRegions = (size: BoardSize): number[][] => {
     }
   }
   
-  // Fill any remaining cells
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
       if (regions[r][c] === -1) {
-        // Find nearest assigned region
         for (const [dr, dc] of [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
           const nr = r + dr;
           const nc = c + dc;
@@ -58,14 +55,14 @@ const generateColorRegions = (size: BoardSize): number[][] => {
 };
 
 const regionColors = [
-  "bg-red-200 dark:bg-red-900/50",
-  "bg-blue-200 dark:bg-blue-900/50",
-  "bg-green-200 dark:bg-green-900/50",
-  "bg-yellow-200 dark:bg-yellow-900/50",
-  "bg-purple-200 dark:bg-purple-900/50",
-  "bg-pink-200 dark:bg-pink-900/50",
-  "bg-orange-200 dark:bg-orange-900/50",
-  "bg-cyan-200 dark:bg-cyan-900/50",
+  "bg-gradient-to-br from-rose-300 to-rose-400 dark:from-rose-800 dark:to-rose-700",
+  "bg-gradient-to-br from-sky-300 to-sky-400 dark:from-sky-800 dark:to-sky-700",
+  "bg-gradient-to-br from-emerald-300 to-emerald-400 dark:from-emerald-800 dark:to-emerald-700",
+  "bg-gradient-to-br from-amber-300 to-amber-400 dark:from-amber-800 dark:to-amber-700",
+  "bg-gradient-to-br from-violet-300 to-violet-400 dark:from-violet-800 dark:to-violet-700",
+  "bg-gradient-to-br from-pink-300 to-pink-400 dark:from-pink-800 dark:to-pink-700",
+  "bg-gradient-to-br from-orange-300 to-orange-400 dark:from-orange-800 dark:to-orange-700",
+  "bg-gradient-to-br from-cyan-300 to-cyan-400 dark:from-cyan-800 dark:to-cyan-700",
 ];
 
 export const QueensGame = () => {
@@ -74,7 +71,25 @@ export const QueensGame = () => {
   const [queens, setQueens] = useState<boolean[][]>([]);
   const [conflicts, setConflicts] = useState<Set<string>>(new Set());
   const [isComplete, setIsComplete] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [completionTime, setCompletionTime] = useState<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setElapsedTime(0);
+    timerRef.current = setInterval(() => {
+      setElapsedTime(prev => prev + 1);
+    }, 1000);
+  }, []);
+
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
 
   const initGame = useCallback(() => {
     const newRegions = generateColorRegions(size);
@@ -82,17 +97,19 @@ export const QueensGame = () => {
     setQueens(Array(size).fill(null).map(() => Array(size).fill(false)));
     setConflicts(new Set());
     setIsComplete(false);
-  }, [size]);
+    setCompletionTime(null);
+    startTimer();
+  }, [size, startTimer]);
 
   useEffect(() => {
     initGame();
-  }, [initGame]);
+    return () => stopTimer();
+  }, [initGame, stopTimer]);
 
   const checkConflicts = (board: boolean[][]): Set<string> => {
     const newConflicts = new Set<string>();
     const queenPositions: [number, number][] = [];
     
-    // Find all queens
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
         if (board[r][c]) {
@@ -101,19 +118,16 @@ export const QueensGame = () => {
       }
     }
     
-    // Check each pair of queens
     for (let i = 0; i < queenPositions.length; i++) {
       for (let j = i + 1; j < queenPositions.length; j++) {
         const [r1, c1] = queenPositions[i];
         const [r2, c2] = queenPositions[j];
         
-        // Same row, column, or diagonal
         if (r1 === r2 || c1 === c2 || Math.abs(r1 - r2) === Math.abs(c1 - c2)) {
           newConflicts.add(`${r1}-${c1}`);
           newConflicts.add(`${r2}-${c2}`);
         }
         
-        // Same region
         if (regions[r1][c1] === regions[r2][c2]) {
           newConflicts.add(`${r1}-${c1}`);
           newConflicts.add(`${r2}-${c2}`);
@@ -137,7 +151,6 @@ export const QueensGame = () => {
       }
     }
     
-    // Need exactly `size` queens, one in each region, no conflicts
     return queenCount === size && 
            regionsWithQueens.size === size && 
            checkConflicts(board).size === 0;
@@ -155,23 +168,45 @@ export const QueensGame = () => {
     
     if (checkWin(newQueens)) {
       setIsComplete(true);
-      toast({ title: "Congratulations!", description: "You placed all queens correctly!" });
+      setCompletionTime(elapsedTime);
+      stopTimer();
+      toast({ title: "👑 Congratulations!", description: `You placed all queens correctly in ${elapsedTime} seconds!` });
     }
   };
 
   const queenCount = queens.flat().filter(Boolean).length;
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+  };
+
   return (
-    <Card className="p-6 max-w-lg mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Queens</h2>
-        <div className="flex gap-2">
+    <Card className="p-4 bg-gradient-to-br from-violet-50 to-pink-50 dark:from-violet-950/30 dark:to-pink-950/30 border-2 border-violet-200 dark:border-violet-800 shadow-lg">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="p-1.5 rounded-lg bg-gradient-to-br from-violet-500 to-pink-500">
+          <Crown className="w-4 h-4 text-white" />
+        </div>
+        <h2 className="text-lg font-bold bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent">Queens</h2>
+      </div>
+
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+          <Clock className="w-4 h-4 text-violet-500" />
+          <span className="tabular-nums">{formatTime(completionTime ?? elapsedTime)}</span>
+        </div>
+        <div className="flex gap-1">
           {([4, 5, 6, 8] as BoardSize[]).map((s) => (
             <Button
               key={s}
               variant={size === s ? "default" : "outline"}
               size="sm"
               onClick={() => setSize(s)}
+              className={cn(
+                "text-xs h-7 px-2",
+                size === s && "bg-gradient-to-r from-violet-500 to-pink-500 border-0"
+              )}
             >
               {s}×{s}
             </Button>
@@ -179,25 +214,24 @@ export const QueensGame = () => {
         </div>
       </div>
 
-      <p className="text-sm text-muted-foreground mb-4">
-        Place {size} queens so that no two queens attack each other (row, column, diagonal) 
-        and each colored region has exactly one queen.
+      <p className="text-xs text-muted-foreground mb-2">
+        Place {size} queens—no attacks, one per color.
       </p>
 
       {isComplete && (
-        <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-2 text-green-600">
-          <CheckCircle className="w-5 h-5" />
-          <span className="font-medium">Puzzle Completed!</span>
+        <div className="mb-3 p-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-lg flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+          <CheckCircle className="w-4 h-4" />
+          <span className="font-medium text-sm">Completed in {formatTime(completionTime!)}!</span>
         </div>
       )}
 
-      <div className="mb-4 flex items-center gap-2 text-sm">
-        <Crown className="w-4 h-4 text-yellow-500" />
-        <span>Queens placed: {queenCount} / {size}</span>
+      <div className="mb-3 flex items-center gap-2 text-sm">
+        <Crown className="w-4 h-4 text-amber-500" />
+        <span className="font-medium">{queenCount} / {size}</span>
       </div>
 
       <div 
-        className="grid gap-0 border-2 border-foreground/30 mb-4 aspect-square"
+        className="grid gap-0.5 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner p-1 bg-foreground/10"
         style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
       >
         {queens.map((row, rowIndex) =>
@@ -209,18 +243,18 @@ export const QueensGame = () => {
               <button
                 key={`${rowIndex}-${colIndex}`}
                 className={cn(
-                  "aspect-square flex items-center justify-center border border-border/30 transition-all",
+                  "aspect-square flex items-center justify-center rounded-sm transition-all shadow-sm",
                   regionColors[regionIndex % regionColors.length],
-                  hasConflict && "ring-2 ring-destructive ring-inset",
-                  !isComplete && "hover:brightness-90 cursor-pointer"
+                  hasConflict && "ring-2 ring-red-500 ring-inset animate-pulse",
+                  !isComplete && "hover:brightness-110 hover:scale-105 cursor-pointer active:scale-95"
                 )}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
               >
                 {hasQueen && (
                   <Crown 
                     className={cn(
-                      "w-6 h-6",
-                      hasConflict ? "text-destructive" : "text-yellow-600 dark:text-yellow-400"
+                      "w-5 h-5 drop-shadow-lg",
+                      hasConflict ? "text-red-600 dark:text-red-400" : "text-amber-500"
                     )} 
                     fill="currentColor"
                   />
@@ -231,8 +265,12 @@ export const QueensGame = () => {
         )}
       </div>
 
-      <Button variant="outline" onClick={initGame} className="w-full">
-        <RefreshCw className="w-4 h-4 mr-2" />
+      <Button 
+        variant="outline" 
+        onClick={initGame} 
+        className="w-full text-xs h-8 border-violet-300 dark:border-violet-700 hover:bg-violet-100 dark:hover:bg-violet-900/50"
+      >
+        <RefreshCw className="w-3 h-3 mr-1" />
         New Game
       </Button>
     </Card>
