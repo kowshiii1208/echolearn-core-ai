@@ -38,6 +38,39 @@ export type Database = {
         }
         Relationships: []
       }
+      game_scores: {
+        Row: {
+          challenge_date: string | null
+          completion_time: number
+          created_at: string
+          difficulty: string
+          game_type: string
+          id: string
+          is_daily_challenge: boolean | null
+          user_id: string
+        }
+        Insert: {
+          challenge_date?: string | null
+          completion_time: number
+          created_at?: string
+          difficulty: string
+          game_type: string
+          id?: string
+          is_daily_challenge?: boolean | null
+          user_id: string
+        }
+        Update: {
+          challenge_date?: string | null
+          completion_time?: number
+          created_at?: string
+          difficulty?: string
+          game_type?: string
+          id?: string
+          is_daily_challenge?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

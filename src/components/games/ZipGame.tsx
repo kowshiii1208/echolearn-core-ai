@@ -1,20 +1,32 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { RefreshCw, CheckCircle, Undo, Clock, Zap } from "lucide-react";
+import { RefreshCw, CheckCircle, Undo, Clock, Zap, Play, Trophy, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useGameScores, getDailySeed } from "@/hooks/useGameScores";
 
 type GridSize = 5 | 6 | 7;
 
-const generateZipPuzzle = (size: GridSize): { start: [number, number]; end: [number, number]; grid: number[][] } => {
+const seededRandom = (seed: number) => {
+  const x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+};
+
+const generateZipPuzzle = (size: GridSize, seed?: number): { start: [number, number]; end: [number, number]; grid: number[][] } => {
+  let currentSeed = seed ?? Math.random() * 1000000;
+  const random = () => {
+    currentSeed++;
+    return seededRandom(currentSeed);
+  };
+
   const grid = Array(size).fill(null).map(() => Array(size).fill(0));
   
   const path: [number, number][] = [];
   const visited = new Set<string>();
   
-  const startRow = Math.floor(Math.random() * size);
-  const startCol = Math.floor(Math.random() * size);
+  const startRow = Math.floor(random() * size);
+  const startCol = Math.floor(random() * size);
   path.push([startRow, startCol]);
   visited.add(`${startRow}-${startCol}`);
   
@@ -27,7 +39,7 @@ const generateZipPuzzle = (size: GridSize): { start: [number, number]; end: [num
   let attempts = 0;
   
   while (path.length < size * size && attempts < maxAttempts) {
-    const shuffledDirs = [...directions].sort(() => Math.random() - 0.5);
+    const shuffledDirs = [...directions].sort(() => random() - 0.5);
     let moved = false;
     
     for (const [dr, dc] of shuffledDirs) {
@@ -67,10 +79,13 @@ export const ZipGame = () => {
   const [puzzle, setPuzzle] = useState<{ start: [number, number]; end: [number, number]; grid: number[][] } | null>(null);
   const [path, setPath] = useState<[number, number][]>([]);
   const [isComplete, setIsComplete] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isDailyChallenge, setIsDailyChallenge] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [completionTime, setCompletionTime] = useState<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+  const { bestScore, saveScore } = useGameScores("zip");
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -87,19 +102,37 @@ export const ZipGame = () => {
     }
   }, []);
 
-  const initGame = useCallback(() => {
-    const newPuzzle = generateZipPuzzle(size);
+  const initGame = useCallback((daily: boolean = false) => {
+    const seed = daily ? getDailySeed() + 2000 : undefined;
+    const gameSize = daily ? 6 : size;
+    const newPuzzle = generateZipPuzzle(gameSize, seed);
     setPuzzle(newPuzzle);
     setPath([newPuzzle.start]);
     setIsComplete(false);
     setCompletionTime(null);
-    startTimer();
-  }, [size, startTimer]);
+    setIsPlaying(false);
+    setIsDailyChallenge(daily);
+    stopTimer();
+    setElapsedTime(0);
+  }, [size, stopTimer]);
 
   useEffect(() => {
     initGame();
     return () => stopTimer();
-  }, [initGame, stopTimer]);
+  }, []);
+
+  useEffect(() => {
+    if (!isDailyChallenge) {
+      initGame(false);
+    }
+  }, [size]);
+
+  const handlePlay = () => {
+    setIsPlaying(true);
+    startTimer();
+  };
+
+  const currentSize = isDailyChallenge ? 6 : size;
 
   const isAdjacent = (pos1: [number, number], pos2: [number, number]): boolean => {
     const [r1, c1] = pos1;
@@ -108,7 +141,7 @@ export const ZipGame = () => {
   };
 
   const handleCellClick = (row: number, col: number) => {
-    if (isComplete || !puzzle) return;
+    if (isComplete || !puzzle || !isPlaying) return;
     
     const lastPos = path[path.length - 1];
     
@@ -131,16 +164,17 @@ export const ZipGame = () => {
     const newPath = [...path, [row, col] as [number, number]];
     setPath(newPath);
     
-    if (row === puzzle.end[0] && col === puzzle.end[1] && newPath.length === size * size) {
+    if (row === puzzle.end[0] && col === puzzle.end[1] && newPath.length === currentSize * currentSize) {
       setIsComplete(true);
       setCompletionTime(elapsedTime);
       stopTimer();
+      saveScore({ difficulty: `${currentSize}x${currentSize}`, completionTime: elapsedTime, isDailyChallenge });
       toast({ title: "⚡ Congratulations!", description: `You completed Zip in ${elapsedTime} seconds!` });
     }
   };
 
   const handleUndo = () => {
-    if (path.length > 1) {
+    if (path.length > 1 && isPlaying) {
       setPath(path.slice(0, -1));
     }
   };
@@ -157,15 +191,23 @@ export const ZipGame = () => {
 
   if (!puzzle) return null;
 
-  const targetLength = size * size;
+  const targetLength = currentSize * currentSize;
 
   return (
     <Card className="p-4 bg-gradient-to-br from-emerald-50 to-cyan-50 dark:from-emerald-950/30 dark:to-cyan-950/30 border-2 border-emerald-200 dark:border-emerald-800 shadow-lg">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="p-1.5 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500">
-          <Zap className="w-4 h-4 text-white" />
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500">
+            <Zap className="w-4 h-4 text-white" />
+          </div>
+          <h2 className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">Zip</h2>
         </div>
-        <h2 className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">Zip</h2>
+        {bestScore && (
+          <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+            <Trophy className="w-3 h-3" />
+            <span>{formatTime(bestScore.completion_time)}</span>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between mb-3">
@@ -173,23 +215,33 @@ export const ZipGame = () => {
           <Clock className="w-4 h-4 text-emerald-500" />
           <span className="tabular-nums">{formatTime(completionTime ?? elapsedTime)}</span>
         </div>
-        <div className="flex gap-1">
-          {([5, 6, 7] as GridSize[]).map((s) => (
-            <Button
-              key={s}
-              variant={size === s ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSize(s)}
-              className={cn(
-                "text-xs h-7 px-2",
-                size === s && "bg-gradient-to-r from-emerald-500 to-cyan-500 border-0"
-              )}
-            >
-              {s}×{s}
-            </Button>
-          ))}
-        </div>
+        {!isDailyChallenge && (
+          <div className="flex gap-1">
+            {([5, 6, 7] as GridSize[]).map((s) => (
+              <Button
+                key={s}
+                variant={size === s ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSize(s)}
+                disabled={isPlaying && !isComplete}
+                className={cn(
+                  "text-xs h-7 px-2",
+                  size === s && "bg-gradient-to-r from-emerald-500 to-cyan-500 border-0"
+                )}
+              >
+                {s}×{s}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
+
+      {isDailyChallenge && (
+        <div className="mb-3 p-2 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 rounded-lg flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+          <Calendar className="w-4 h-4" />
+          <span className="font-medium text-sm">Daily Challenge (6×6)</span>
+        </div>
+      )}
 
       <p className="text-xs text-muted-foreground mb-2">
         Connect 1 to {targetLength}. Visit every cell once.
@@ -202,16 +254,31 @@ export const ZipGame = () => {
         </div>
       )}
 
+      {!isPlaying && !isComplete && (
+        <div className="mb-3 flex justify-center">
+          <Button
+            onClick={handlePlay}
+            className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white px-8"
+          >
+            <Play className="w-4 h-4 mr-2" />
+            Play
+          </Button>
+        </div>
+      )}
+
       <div className="mb-3 text-sm font-medium text-muted-foreground">
         Progress: <span className="text-emerald-600 dark:text-emerald-400">{path.length}</span> / {targetLength}
       </div>
 
       <div 
-        className="grid gap-0.5 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner p-1 bg-foreground/10"
-        style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
+        className={cn(
+          "grid gap-0.5 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner p-1 bg-foreground/10",
+          !isPlaying && !isComplete && "opacity-50 pointer-events-none"
+        )}
+        style={{ gridTemplateColumns: `repeat(${currentSize}, 1fr)` }}
       >
-        {Array(size).fill(null).map((_, rowIndex) =>
-          Array(size).fill(null).map((_, colIndex) => {
+        {Array(currentSize).fill(null).map((_, rowIndex) =>
+          Array(currentSize).fill(null).map((_, colIndex) => {
             const isStart = puzzle.start[0] === rowIndex && puzzle.start[1] === colIndex;
             const isEnd = puzzle.end[0] === rowIndex && puzzle.end[1] === colIndex;
             const pathIdx = getPathIndex(rowIndex, colIndex);
@@ -228,13 +295,13 @@ export const ZipGame = () => {
                   "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700",
                   inPath && "from-emerald-300 to-cyan-300 dark:from-emerald-700 dark:to-cyan-700",
                   isLastInPath && !isComplete && "ring-2 ring-emerald-500 from-emerald-400 to-cyan-400 dark:from-emerald-600 dark:to-cyan-600",
-                  canClick && !isComplete && "hover:from-emerald-200 hover:to-cyan-200 dark:hover:from-emerald-800 dark:hover:to-cyan-800 hover:scale-105 cursor-pointer",
+                  canClick && isPlaying && !isComplete && "hover:from-emerald-200 hover:to-cyan-200 dark:hover:from-emerald-800 dark:hover:to-cyan-800 hover:scale-105 cursor-pointer",
                   !canClick && !inPath && "opacity-60",
                   isStart && "from-green-400 to-green-500 dark:from-green-600 dark:to-green-500",
                   isEnd && "from-red-400 to-red-500 dark:from-red-600 dark:to-red-500"
                 )}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
-                disabled={isComplete}
+                disabled={isComplete || !isPlaying}
               >
                 {isStart && <span className="text-white font-bold drop-shadow">1</span>}
                 {isEnd && <span className="text-white font-bold drop-shadow">{targetLength}</span>}
@@ -250,7 +317,7 @@ export const ZipGame = () => {
       <div className="flex gap-2">
         <Button 
           variant="outline" 
-          onClick={initGame} 
+          onClick={() => initGame(false)} 
           className="flex-1 text-xs h-8 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
         >
           <RefreshCw className="w-3 h-3 mr-1" />
@@ -258,8 +325,16 @@ export const ZipGame = () => {
         </Button>
         <Button 
           variant="outline" 
+          onClick={() => initGame(true)} 
+          className="flex-1 text-xs h-8 border-cyan-300 dark:border-cyan-700 bg-gradient-to-r from-cyan-100 to-emerald-100 dark:from-cyan-900/30 dark:to-emerald-900/30"
+        >
+          <Calendar className="w-3 h-3 mr-1" />
+          Daily
+        </Button>
+        <Button 
+          variant="outline" 
           onClick={handleUndo} 
-          disabled={path.length <= 1 || isComplete}
+          disabled={path.length <= 1 || isComplete || !isPlaying}
           className="text-xs h-8 border-cyan-300 dark:border-cyan-700 hover:bg-cyan-100 dark:hover:bg-cyan-900/50"
         >
           <Undo className="w-3 h-3 mr-1" />

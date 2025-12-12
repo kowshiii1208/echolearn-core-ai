@@ -1,18 +1,30 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { RefreshCw, Crown, CheckCircle, Clock } from "lucide-react";
+import { RefreshCw, Crown, CheckCircle, Clock, Play, Trophy, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useGameScores, getDailySeed } from "@/hooks/useGameScores";
 
 type BoardSize = 4 | 5 | 6 | 8;
 
-const generateColorRegions = (size: BoardSize): number[][] => {
+const seededRandom = (seed: number) => {
+  const x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+};
+
+const generateColorRegions = (size: BoardSize, seed?: number): number[][] => {
+  let currentSeed = seed ?? Math.random() * 1000000;
+  const random = () => {
+    currentSeed++;
+    return seededRandom(currentSeed);
+  };
+
   const regions = Array(size).fill(null).map(() => Array(size).fill(-1));
   
   for (let i = 0; i < size; i++) {
-    const startRow = Math.floor(Math.random() * size);
-    const startCol = Math.floor(Math.random() * size);
+    const startRow = Math.floor(random() * size);
+    const startCol = Math.floor(random() * size);
     
     const queue: [number, number][] = [[startRow, startCol]];
     let filled = 0;
@@ -26,7 +38,7 @@ const generateColorRegions = (size: BoardSize): number[][] => {
       regions[r][c] = i;
       filled++;
       
-      const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]].sort(() => Math.random() - 0.5);
+      const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]].sort(() => random() - 0.5);
       for (const [dr, dc] of dirs) {
         queue.push([r + dr, c + dc]);
       }
@@ -71,10 +83,13 @@ export const QueensGame = () => {
   const [queens, setQueens] = useState<boolean[][]>([]);
   const [conflicts, setConflicts] = useState<Set<string>>(new Set());
   const [isComplete, setIsComplete] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isDailyChallenge, setIsDailyChallenge] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [completionTime, setCompletionTime] = useState<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+  const { bestScore, saveScore } = useGameScores("queens");
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -91,27 +106,45 @@ export const QueensGame = () => {
     }
   }, []);
 
-  const initGame = useCallback(() => {
-    const newRegions = generateColorRegions(size);
+  const initGame = useCallback((daily: boolean = false) => {
+    const seed = daily ? getDailySeed() + 1000 : undefined;
+    const gameSize = daily ? 6 : size;
+    const newRegions = generateColorRegions(gameSize, seed);
     setRegions(newRegions);
-    setQueens(Array(size).fill(null).map(() => Array(size).fill(false)));
+    setQueens(Array(gameSize).fill(null).map(() => Array(gameSize).fill(false)));
     setConflicts(new Set());
     setIsComplete(false);
     setCompletionTime(null);
-    startTimer();
-  }, [size, startTimer]);
+    setIsPlaying(false);
+    setIsDailyChallenge(daily);
+    stopTimer();
+    setElapsedTime(0);
+  }, [size, stopTimer]);
 
   useEffect(() => {
     initGame();
     return () => stopTimer();
-  }, [initGame, stopTimer]);
+  }, []);
+
+  useEffect(() => {
+    if (!isDailyChallenge) {
+      initGame(false);
+    }
+  }, [size]);
+
+  const handlePlay = () => {
+    setIsPlaying(true);
+    startTimer();
+  };
+
+  const currentSize = isDailyChallenge ? 6 : size;
 
   const checkConflicts = (board: boolean[][]): Set<string> => {
     const newConflicts = new Set<string>();
     const queenPositions: [number, number][] = [];
     
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
+    for (let r = 0; r < currentSize; r++) {
+      for (let c = 0; c < currentSize; c++) {
         if (board[r][c]) {
           queenPositions.push([r, c]);
         }
@@ -142,8 +175,8 @@ export const QueensGame = () => {
     let queenCount = 0;
     const regionsWithQueens = new Set<number>();
     
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
+    for (let r = 0; r < currentSize; r++) {
+      for (let c = 0; c < currentSize; c++) {
         if (board[r][c]) {
           queenCount++;
           regionsWithQueens.add(regions[r][c]);
@@ -151,13 +184,13 @@ export const QueensGame = () => {
       }
     }
     
-    return queenCount === size && 
-           regionsWithQueens.size === size && 
+    return queenCount === currentSize && 
+           regionsWithQueens.size === currentSize && 
            checkConflicts(board).size === 0;
   };
 
   const handleCellClick = (row: number, col: number) => {
-    if (isComplete) return;
+    if (isComplete || !isPlaying) return;
     
     const newQueens = queens.map(r => [...r]);
     newQueens[row][col] = !newQueens[row][col];
@@ -170,6 +203,7 @@ export const QueensGame = () => {
       setIsComplete(true);
       setCompletionTime(elapsedTime);
       stopTimer();
+      saveScore({ difficulty: `${currentSize}x${currentSize}`, completionTime: elapsedTime, isDailyChallenge });
       toast({ title: "👑 Congratulations!", description: `You placed all queens correctly in ${elapsedTime} seconds!` });
     }
   };
@@ -184,11 +218,19 @@ export const QueensGame = () => {
 
   return (
     <Card className="p-4 bg-gradient-to-br from-violet-50 to-pink-50 dark:from-violet-950/30 dark:to-pink-950/30 border-2 border-violet-200 dark:border-violet-800 shadow-lg">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="p-1.5 rounded-lg bg-gradient-to-br from-violet-500 to-pink-500">
-          <Crown className="w-4 h-4 text-white" />
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-gradient-to-br from-violet-500 to-pink-500">
+            <Crown className="w-4 h-4 text-white" />
+          </div>
+          <h2 className="text-lg font-bold bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent">Queens</h2>
         </div>
-        <h2 className="text-lg font-bold bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent">Queens</h2>
+        {bestScore && (
+          <div className="flex items-center gap-1 text-xs text-violet-600 dark:text-violet-400">
+            <Trophy className="w-3 h-3" />
+            <span>{formatTime(bestScore.completion_time)}</span>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between mb-3">
@@ -196,26 +238,36 @@ export const QueensGame = () => {
           <Clock className="w-4 h-4 text-violet-500" />
           <span className="tabular-nums">{formatTime(completionTime ?? elapsedTime)}</span>
         </div>
-        <div className="flex gap-1">
-          {([4, 5, 6, 8] as BoardSize[]).map((s) => (
-            <Button
-              key={s}
-              variant={size === s ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSize(s)}
-              className={cn(
-                "text-xs h-7 px-2",
-                size === s && "bg-gradient-to-r from-violet-500 to-pink-500 border-0"
-              )}
-            >
-              {s}×{s}
-            </Button>
-          ))}
-        </div>
+        {!isDailyChallenge && (
+          <div className="flex gap-1">
+            {([4, 5, 6, 8] as BoardSize[]).map((s) => (
+              <Button
+                key={s}
+                variant={size === s ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSize(s)}
+                disabled={isPlaying && !isComplete}
+                className={cn(
+                  "text-xs h-7 px-2",
+                  size === s && "bg-gradient-to-r from-violet-500 to-pink-500 border-0"
+                )}
+              >
+                {s}×{s}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
 
+      {isDailyChallenge && (
+        <div className="mb-3 p-2 bg-gradient-to-r from-violet-500/20 to-pink-500/20 border border-violet-500/30 rounded-lg flex items-center gap-2 text-violet-600 dark:text-violet-400">
+          <Calendar className="w-4 h-4" />
+          <span className="font-medium text-sm">Daily Challenge (6×6)</span>
+        </div>
+      )}
+
       <p className="text-xs text-muted-foreground mb-2">
-        Place {size} queens—no attacks, one per color.
+        Place {currentSize} queens—no attacks, one per color.
       </p>
 
       {isComplete && (
@@ -225,14 +277,29 @@ export const QueensGame = () => {
         </div>
       )}
 
+      {!isPlaying && !isComplete && (
+        <div className="mb-3 flex justify-center">
+          <Button
+            onClick={handlePlay}
+            className="bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 text-white px-8"
+          >
+            <Play className="w-4 h-4 mr-2" />
+            Play
+          </Button>
+        </div>
+      )}
+
       <div className="mb-3 flex items-center gap-2 text-sm">
         <Crown className="w-4 h-4 text-amber-500" />
-        <span className="font-medium">{queenCount} / {size}</span>
+        <span className="font-medium">{queenCount} / {currentSize}</span>
       </div>
 
       <div 
-        className="grid gap-0.5 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner p-1 bg-foreground/10"
-        style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
+        className={cn(
+          "grid gap-0.5 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner p-1 bg-foreground/10",
+          !isPlaying && !isComplete && "opacity-50 pointer-events-none"
+        )}
+        style={{ gridTemplateColumns: `repeat(${currentSize}, 1fr)` }}
       >
         {queens.map((row, rowIndex) =>
           row.map((hasQueen, colIndex) => {
@@ -246,7 +313,7 @@ export const QueensGame = () => {
                   "aspect-square flex items-center justify-center rounded-sm transition-all shadow-sm",
                   regionColors[regionIndex % regionColors.length],
                   hasConflict && "ring-2 ring-red-500 ring-inset animate-pulse",
-                  !isComplete && "hover:brightness-110 hover:scale-105 cursor-pointer active:scale-95"
+                  isPlaying && !isComplete && "hover:brightness-110 hover:scale-105 cursor-pointer active:scale-95"
                 )}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
               >
@@ -265,14 +332,24 @@ export const QueensGame = () => {
         )}
       </div>
 
-      <Button 
-        variant="outline" 
-        onClick={initGame} 
-        className="w-full text-xs h-8 border-violet-300 dark:border-violet-700 hover:bg-violet-100 dark:hover:bg-violet-900/50"
-      >
-        <RefreshCw className="w-3 h-3 mr-1" />
-        New Game
-      </Button>
+      <div className="flex gap-2">
+        <Button 
+          variant="outline" 
+          onClick={() => initGame(false)} 
+          className="flex-1 text-xs h-8 border-violet-300 dark:border-violet-700 hover:bg-violet-100 dark:hover:bg-violet-900/50"
+        >
+          <RefreshCw className="w-3 h-3 mr-1" />
+          New
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => initGame(true)} 
+          className="flex-1 text-xs h-8 border-pink-300 dark:border-pink-700 bg-gradient-to-r from-pink-100 to-violet-100 dark:from-pink-900/30 dark:to-violet-900/30"
+        >
+          <Calendar className="w-3 h-3 mr-1" />
+          Daily
+        </Button>
+      </div>
     </Card>
   );
 };
