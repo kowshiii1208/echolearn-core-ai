@@ -1,6 +1,7 @@
 import { SudokuGame } from "@/components/games/SudokuGame";
 import { QueensGame } from "@/components/games/QueensGame";
 import { ZipGame } from "@/components/games/ZipGame";
+import { Leaderboard } from "@/components/games/Leaderboard";
 import { Gamepad2, Calendar, CheckCircle } from "lucide-react";
 import { useDailyChallengeStatus } from "@/hooks/useGameScores";
 import { cn } from "@/lib/utils";
@@ -55,6 +56,10 @@ export const GamesPanel = () => {
         <SudokuGame />
         <QueensGame />
         <ZipGame />
+      </div>
+
+      <div className="mt-6">
+        <Leaderboard />
       </div>
     </div>
   );
