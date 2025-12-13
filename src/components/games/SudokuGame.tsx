@@ -127,26 +127,17 @@ export const SudokuGame = () => {
     setErrors(new Set());
     setIsComplete(false);
     setCompletionTime(null);
-    setIsPlaying(false);
     setIsDailyChallenge(daily);
-    stopTimer();
-    setElapsedTime(0);
-  }, [difficulty, stopTimer]);
-
-  useEffect(() => {
-    initGame();
-    return () => stopTimer();
-  }, []);
-
-  useEffect(() => {
-    if (!isDailyChallenge) {
-      initGame(false);
-    }
-  }, [difficulty]);
-
-  const handlePlay = () => {
-    setIsPlaying(true);
     startTimer();
+    setIsPlaying(true);
+  }, [difficulty, startTimer]);
+
+  useEffect(() => {
+    return () => stopTimer();
+  }, [stopTimer]);
+
+  const handlePlay = (daily: boolean = false) => {
+    initGame(daily);
   };
 
   const handleCellClick = (row: number, col: number) => {
@@ -220,6 +211,11 @@ export const SudokuGame = () => {
     });
   };
 
+  const handleBack = () => {
+    setIsPlaying(false);
+    stopTimer();
+  };
+
   const getBoxIndex = (row: number, col: number) => {
     return Math.floor(row / 3) * 3 + Math.floor(col / 3);
   };
@@ -230,6 +226,62 @@ export const SudokuGame = () => {
     return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
   };
 
+  // Menu view (before playing)
+  if (!isPlaying) {
+    return (
+      <Card className="p-6 bg-gradient-to-br from-rose-50 to-amber-50 dark:from-rose-950/30 dark:to-amber-950/30 border-2 border-rose-200 dark:border-rose-800 shadow-lg flex flex-col items-center justify-center min-h-[320px]">
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 mb-4">
+          <Grid3X3 className="w-12 h-12 text-white" />
+        </div>
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-amber-600 bg-clip-text text-transparent mb-2">
+          Sudoku
+        </h2>
+        {bestScore && (
+          <div className="flex items-center gap-1 text-sm text-amber-600 dark:text-amber-400 mb-4">
+            <Trophy className="w-4 h-4" />
+            <span>Best: {formatTime(bestScore.completion_time)}</span>
+          </div>
+        )}
+
+        <div className="flex gap-2 mb-6">
+          {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
+            <Button
+              key={d}
+              variant={difficulty === d ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDifficulty(d)}
+              className={cn(
+                "text-sm px-4",
+                difficulty === d && "bg-gradient-to-r from-rose-500 to-amber-500 border-0"
+              )}
+            >
+              {d.charAt(0).toUpperCase() + d.slice(1)}
+            </Button>
+          ))}
+        </div>
+
+        <div className="flex gap-3">
+          <Button
+            onClick={() => handlePlay(false)}
+            className="bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white px-8"
+          >
+            <Play className="w-5 h-5 mr-2" />
+            Play
+          </Button>
+          <Button
+            onClick={() => handlePlay(true)}
+            variant="outline"
+            className="border-amber-300 dark:border-amber-700 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30"
+          >
+            <Calendar className="w-5 h-5 mr-2" />
+            Daily
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  // Game view
   return (
     <Card className="p-4 bg-gradient-to-br from-rose-50 to-amber-50 dark:from-rose-950/30 dark:to-amber-950/30 border-2 border-rose-200 dark:border-rose-800 shadow-lg">
       <div className="flex items-center justify-between mb-3">
@@ -238,47 +290,15 @@ export const SudokuGame = () => {
             <Grid3X3 className="w-4 h-4 text-white" />
           </div>
           <h2 className="text-lg font-bold bg-gradient-to-r from-rose-600 to-amber-600 bg-clip-text text-transparent">Sudoku</h2>
+          {isDailyChallenge && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-800 text-amber-700 dark:text-amber-300">Daily</span>
+          )}
         </div>
-        {bestScore && (
-          <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
-            <Trophy className="w-3 h-3" />
-            <span>{formatTime(bestScore.completion_time)}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
           <Clock className="w-4 h-4 text-rose-500" />
           <span className="tabular-nums">{formatTime(completionTime ?? elapsedTime)}</span>
         </div>
-        {!isDailyChallenge && (
-          <div className="flex gap-1">
-            {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
-              <Button
-                key={d}
-                variant={difficulty === d ? "default" : "outline"}
-                size="sm"
-                onClick={() => setDifficulty(d)}
-                disabled={isPlaying && !isComplete}
-                className={cn(
-                  "text-xs h-7 px-2",
-                  difficulty === d && "bg-gradient-to-r from-rose-500 to-amber-500 border-0"
-                )}
-              >
-                {d.charAt(0).toUpperCase() + d.slice(1)}
-              </Button>
-            ))}
-          </div>
-        )}
       </div>
-
-      {isDailyChallenge && (
-        <div className="mb-3 p-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-lg flex items-center gap-2 text-amber-600 dark:text-amber-400">
-          <Calendar className="w-4 h-4" />
-          <span className="font-medium text-sm">Daily Challenge</span>
-        </div>
-      )}
 
       {isComplete && (
         <div className="mb-3 p-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-lg flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
@@ -287,22 +307,7 @@ export const SudokuGame = () => {
         </div>
       )}
 
-      {!isPlaying && !isComplete && (
-        <div className="mb-3 flex justify-center">
-          <Button
-            onClick={handlePlay}
-            className="bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white px-8"
-          >
-            <Play className="w-4 h-4 mr-2" />
-            Play
-          </Button>
-        </div>
-      )}
-
-      <div className={cn(
-        "grid grid-cols-9 gap-0 border-2 border-foreground/30 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner",
-        !isPlaying && !isComplete && "opacity-50 pointer-events-none"
-      )}>
+      <div className="grid grid-cols-9 gap-0 border-2 border-foreground/30 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner">
         {userBoard.map((row, rowIndex) =>
           row.map((cell, colIndex) => {
             const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === colIndex;
@@ -331,7 +336,7 @@ export const SudokuGame = () => {
                   !isOriginal && !isSelected && "hover:brightness-90 cursor-pointer"
                 )}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
-                disabled={isOriginal || !isPlaying}
+                disabled={isOriginal || isComplete}
               >
                 {cell !== 0 ? cell : ""}
               </button>
@@ -340,10 +345,7 @@ export const SudokuGame = () => {
         )}
       </div>
 
-      <div className={cn(
-        "grid grid-cols-9 gap-1 mb-3",
-        !isPlaying && "opacity-50 pointer-events-none"
-      )}>
+      <div className="grid grid-cols-9 gap-1 mb-3">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
           <Button
             key={num}
@@ -355,7 +357,7 @@ export const SudokuGame = () => {
               "border-rose-300 dark:border-rose-700"
             )}
             onClick={() => handleNumberInput(num)}
-            disabled={!selectedCell || isComplete || !isPlaying}
+            disabled={!selectedCell || isComplete}
           >
             {num}
           </Button>
@@ -363,23 +365,18 @@ export const SudokuGame = () => {
       </div>
 
       <div className="flex gap-2">
-        <Button variant="outline" onClick={() => initGame(false)} className="flex-1 text-xs h-8 border-rose-300 dark:border-rose-700">
+        <Button variant="outline" onClick={handleBack} className="text-xs h-8 border-rose-300 dark:border-rose-700">
+          ← Back
+        </Button>
+        <Button variant="outline" onClick={() => initGame(isDailyChallenge)} className="flex-1 text-xs h-8 border-rose-300 dark:border-rose-700">
           <RefreshCw className="w-3 h-3 mr-1" />
-          New
+          Restart
         </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => initGame(true)} 
-          className="flex-1 text-xs h-8 border-amber-300 dark:border-amber-700 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30"
-        >
-          <Calendar className="w-3 h-3 mr-1" />
-          Daily
-        </Button>
-        <Button variant="outline" onClick={handleHint} disabled={isComplete || !isPlaying} className="text-xs h-8 border-amber-300 dark:border-amber-700">
+        <Button variant="outline" onClick={handleHint} disabled={isComplete} className="text-xs h-8 border-amber-300 dark:border-amber-700">
           <Lightbulb className="w-3 h-3 mr-1" />
           Hint
         </Button>
-        <Button variant="outline" onClick={clearCell} disabled={!selectedCell || isComplete || !isPlaying} className="text-xs h-8 border-rose-300 dark:border-rose-700">
+        <Button variant="outline" onClick={clearCell} disabled={!selectedCell || isComplete} className="text-xs h-8 border-rose-300 dark:border-rose-700">
           <XCircle className="w-3 h-3 mr-1" />
           Clear
         </Button>

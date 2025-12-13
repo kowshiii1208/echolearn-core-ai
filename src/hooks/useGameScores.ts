@@ -13,6 +13,14 @@ interface GameScore {
   created_at: string;
 }
 
+interface GameStreak {
+  id: string;
+  user_id: string;
+  current_streak: number;
+  longest_streak: number;
+  last_completed_date: string | null;
+}
+
 export const useGameScores = (gameType: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -84,12 +92,20 @@ export const useGameScores = (gameType: string) => {
         .single();
 
       if (error) throw error;
+
+      // Update streak if daily challenge completed
+      if (isDailyChallenge) {
+        await updateStreak(user.id, today);
+      }
+
       return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["game-scores", gameType] });
       queryClient.invalidateQueries({ queryKey: ["best-score", gameType] });
       queryClient.invalidateQueries({ queryKey: ["daily-challenge-status"] });
+      queryClient.invalidateQueries({ queryKey: ["game-streak"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
       
       if (bestScore && data.completion_time < bestScore.completion_time) {
         toast({
@@ -106,6 +122,50 @@ export const useGameScores = (gameType: string) => {
     isLoading,
     saveScore: saveScoreMutation.mutate,
   };
+};
+
+const updateStreak = async (userId: string, today: string) => {
+  const { data: existingStreak } = await supabase
+    .from("game_streaks")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+  if (existingStreak) {
+    // Check if already completed today
+    if (existingStreak.last_completed_date === today) {
+      return;
+    }
+
+    let newStreak = 1;
+    if (existingStreak.last_completed_date === yesterdayStr) {
+      newStreak = existingStreak.current_streak + 1;
+    }
+
+    const newLongest = Math.max(newStreak, existingStreak.longest_streak);
+
+    await supabase
+      .from("game_streaks")
+      .update({
+        current_streak: newStreak,
+        longest_streak: newLongest,
+        last_completed_date: today,
+      })
+      .eq("user_id", userId);
+  } else {
+    await supabase
+      .from("game_streaks")
+      .insert({
+        user_id: userId,
+        current_streak: 1,
+        longest_streak: 1,
+        last_completed_date: today,
+      });
+  }
 };
 
 export const useDailyChallengeStatus = () => {
@@ -133,6 +193,25 @@ export const useDailyChallengeStatus = () => {
       };
 
       return completed;
+    },
+  });
+};
+
+export const useGameStreak = () => {
+  return useQuery({
+    queryKey: ["game-streak"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from("game_streaks")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as GameStreak | null;
     },
   });
 };
