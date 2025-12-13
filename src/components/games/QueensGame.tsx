@@ -115,26 +115,17 @@ export const QueensGame = () => {
     setConflicts(new Set());
     setIsComplete(false);
     setCompletionTime(null);
-    setIsPlaying(false);
     setIsDailyChallenge(daily);
-    stopTimer();
-    setElapsedTime(0);
-  }, [size, stopTimer]);
-
-  useEffect(() => {
-    initGame();
-    return () => stopTimer();
-  }, []);
-
-  useEffect(() => {
-    if (!isDailyChallenge) {
-      initGame(false);
-    }
-  }, [size]);
-
-  const handlePlay = () => {
-    setIsPlaying(true);
     startTimer();
+    setIsPlaying(true);
+  }, [size, startTimer]);
+
+  useEffect(() => {
+    return () => stopTimer();
+  }, [stopTimer]);
+
+  const handlePlay = (daily: boolean = false) => {
+    initGame(daily);
   };
 
   const currentSize = isDailyChallenge ? 6 : size;
@@ -210,12 +201,82 @@ export const QueensGame = () => {
 
   const queenCount = queens.flat().filter(Boolean).length;
 
+  const handleBack = () => {
+    setIsPlaying(false);
+    stopTimer();
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
   };
 
+  const getSizeLabel = (s: BoardSize) => {
+    switch (s) {
+      case 4: return "Easy";
+      case 5: return "Medium";
+      case 6: return "Hard";
+      case 8: return "Expert";
+    }
+  };
+
+  // Menu view (before playing)
+  if (!isPlaying) {
+    return (
+      <Card className="p-6 bg-gradient-to-br from-violet-50 to-pink-50 dark:from-violet-950/30 dark:to-pink-950/30 border-2 border-violet-200 dark:border-violet-800 shadow-lg flex flex-col items-center justify-center min-h-[320px]">
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 mb-4">
+          <Crown className="w-12 h-12 text-white" />
+        </div>
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent mb-2">
+          Queens
+        </h2>
+        {bestScore && (
+          <div className="flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 mb-4">
+            <Trophy className="w-4 h-4" />
+            <span>Best: {formatTime(bestScore.completion_time)}</span>
+          </div>
+        )}
+
+        <div className="flex gap-2 mb-6">
+          {([4, 5, 6, 8] as BoardSize[]).map((s) => (
+            <Button
+              key={s}
+              variant={size === s ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSize(s)}
+              className={cn(
+                "text-sm px-3",
+                size === s && "bg-gradient-to-r from-violet-500 to-pink-500 border-0"
+              )}
+            >
+              {getSizeLabel(s)}
+            </Button>
+          ))}
+        </div>
+
+        <div className="flex gap-3">
+          <Button
+            onClick={() => handlePlay(false)}
+            className="bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 text-white px-8"
+          >
+            <Play className="w-5 h-5 mr-2" />
+            Play
+          </Button>
+          <Button
+            onClick={() => handlePlay(true)}
+            variant="outline"
+            className="border-pink-300 dark:border-pink-700 bg-gradient-to-r from-pink-100 to-violet-100 dark:from-pink-900/30 dark:to-violet-900/30"
+          >
+            <Calendar className="w-5 h-5 mr-2" />
+            Daily
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  // Game view
   return (
     <Card className="p-4 bg-gradient-to-br from-violet-50 to-pink-50 dark:from-violet-950/30 dark:to-pink-950/30 border-2 border-violet-200 dark:border-violet-800 shadow-lg">
       <div className="flex items-center justify-between mb-3">
@@ -224,47 +285,15 @@ export const QueensGame = () => {
             <Crown className="w-4 h-4 text-white" />
           </div>
           <h2 className="text-lg font-bold bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent">Queens</h2>
+          {isDailyChallenge && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-pink-200 dark:bg-pink-800 text-pink-700 dark:text-pink-300">Daily</span>
+          )}
         </div>
-        {bestScore && (
-          <div className="flex items-center gap-1 text-xs text-violet-600 dark:text-violet-400">
-            <Trophy className="w-3 h-3" />
-            <span>{formatTime(bestScore.completion_time)}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
           <Clock className="w-4 h-4 text-violet-500" />
           <span className="tabular-nums">{formatTime(completionTime ?? elapsedTime)}</span>
         </div>
-        {!isDailyChallenge && (
-          <div className="flex gap-1">
-            {([4, 5, 6, 8] as BoardSize[]).map((s) => (
-              <Button
-                key={s}
-                variant={size === s ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSize(s)}
-                disabled={isPlaying && !isComplete}
-                className={cn(
-                  "text-xs h-7 px-2",
-                  size === s && "bg-gradient-to-r from-violet-500 to-pink-500 border-0"
-                )}
-              >
-                {s}×{s}
-              </Button>
-            ))}
-          </div>
-        )}
       </div>
-
-      {isDailyChallenge && (
-        <div className="mb-3 p-2 bg-gradient-to-r from-violet-500/20 to-pink-500/20 border border-violet-500/30 rounded-lg flex items-center gap-2 text-violet-600 dark:text-violet-400">
-          <Calendar className="w-4 h-4" />
-          <span className="font-medium text-sm">Daily Challenge (6×6)</span>
-        </div>
-      )}
 
       <p className="text-xs text-muted-foreground mb-2">
         Place {currentSize} queens—no attacks, one per color.
@@ -277,28 +306,13 @@ export const QueensGame = () => {
         </div>
       )}
 
-      {!isPlaying && !isComplete && (
-        <div className="mb-3 flex justify-center">
-          <Button
-            onClick={handlePlay}
-            className="bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 text-white px-8"
-          >
-            <Play className="w-4 h-4 mr-2" />
-            Play
-          </Button>
-        </div>
-      )}
-
       <div className="mb-3 flex items-center gap-2 text-sm">
         <Crown className="w-4 h-4 text-amber-500" />
         <span className="font-medium">{queenCount} / {currentSize}</span>
       </div>
 
       <div 
-        className={cn(
-          "grid gap-0.5 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner p-1 bg-foreground/10",
-          !isPlaying && !isComplete && "opacity-50 pointer-events-none"
-        )}
+        className="grid gap-0.5 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner p-1 bg-foreground/10"
         style={{ gridTemplateColumns: `repeat(${currentSize}, 1fr)` }}
       >
         {queens.map((row, rowIndex) =>
@@ -313,7 +327,7 @@ export const QueensGame = () => {
                   "aspect-square flex items-center justify-center rounded-sm transition-all shadow-sm",
                   regionColors[regionIndex % regionColors.length],
                   hasConflict && "ring-2 ring-red-500 ring-inset animate-pulse",
-                  isPlaying && !isComplete && "hover:brightness-110 hover:scale-105 cursor-pointer active:scale-95"
+                  !isComplete && "hover:brightness-110 hover:scale-105 cursor-pointer active:scale-95"
                 )}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
               >
@@ -333,21 +347,16 @@ export const QueensGame = () => {
       </div>
 
       <div className="flex gap-2">
-        <Button 
-          variant="outline" 
-          onClick={() => initGame(false)} 
-          className="flex-1 text-xs h-8 border-violet-300 dark:border-violet-700 hover:bg-violet-100 dark:hover:bg-violet-900/50"
-        >
-          <RefreshCw className="w-3 h-3 mr-1" />
-          New
+        <Button variant="outline" onClick={handleBack} className="text-xs h-8 border-violet-300 dark:border-violet-700">
+          ← Back
         </Button>
         <Button 
           variant="outline" 
-          onClick={() => initGame(true)} 
-          className="flex-1 text-xs h-8 border-pink-300 dark:border-pink-700 bg-gradient-to-r from-pink-100 to-violet-100 dark:from-pink-900/30 dark:to-violet-900/30"
+          onClick={() => initGame(isDailyChallenge)} 
+          className="flex-1 text-xs h-8 border-violet-300 dark:border-violet-700 hover:bg-violet-100 dark:hover:bg-violet-900/50"
         >
-          <Calendar className="w-3 h-3 mr-1" />
-          Daily
+          <RefreshCw className="w-3 h-3 mr-1" />
+          Restart
         </Button>
       </div>
     </Card>

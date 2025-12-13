@@ -110,26 +110,17 @@ export const ZipGame = () => {
     setPath([newPuzzle.start]);
     setIsComplete(false);
     setCompletionTime(null);
-    setIsPlaying(false);
     setIsDailyChallenge(daily);
-    stopTimer();
-    setElapsedTime(0);
-  }, [size, stopTimer]);
-
-  useEffect(() => {
-    initGame();
-    return () => stopTimer();
-  }, []);
-
-  useEffect(() => {
-    if (!isDailyChallenge) {
-      initGame(false);
-    }
-  }, [size]);
-
-  const handlePlay = () => {
-    setIsPlaying(true);
     startTimer();
+    setIsPlaying(true);
+  }, [size, startTimer]);
+
+  useEffect(() => {
+    return () => stopTimer();
+  }, [stopTimer]);
+
+  const handlePlay = (daily: boolean = false) => {
+    initGame(daily);
   };
 
   const currentSize = isDailyChallenge ? 6 : size;
@@ -179,6 +170,11 @@ export const ZipGame = () => {
     }
   };
 
+  const handleBack = () => {
+    setIsPlaying(false);
+    stopTimer();
+  };
+
   const getPathIndex = (row: number, col: number): number => {
     return path.findIndex(([r, c]) => r === row && c === col);
   };
@@ -189,8 +185,70 @@ export const ZipGame = () => {
     return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
   };
 
-  if (!puzzle) return null;
+  const getSizeLabel = (s: GridSize) => {
+    switch (s) {
+      case 5: return "Easy";
+      case 6: return "Medium";
+      case 7: return "Hard";
+    }
+  };
 
+  // Menu view (before playing)
+  if (!isPlaying) {
+    return (
+      <Card className="p-6 bg-gradient-to-br from-emerald-50 to-cyan-50 dark:from-emerald-950/30 dark:to-cyan-950/30 border-2 border-emerald-200 dark:border-emerald-800 shadow-lg flex flex-col items-center justify-center min-h-[320px]">
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 mb-4">
+          <Zap className="w-12 h-12 text-white" />
+        </div>
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+          Zip
+        </h2>
+        {bestScore && (
+          <div className="flex items-center gap-1 text-sm text-emerald-600 dark:text-emerald-400 mb-4">
+            <Trophy className="w-4 h-4" />
+            <span>Best: {formatTime(bestScore.completion_time)}</span>
+          </div>
+        )}
+
+        <div className="flex gap-2 mb-6">
+          {([5, 6, 7] as GridSize[]).map((s) => (
+            <Button
+              key={s}
+              variant={size === s ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSize(s)}
+              className={cn(
+                "text-sm px-4",
+                size === s && "bg-gradient-to-r from-emerald-500 to-cyan-500 border-0"
+              )}
+            >
+              {getSizeLabel(s)}
+            </Button>
+          ))}
+        </div>
+
+        <div className="flex gap-3">
+          <Button
+            onClick={() => handlePlay(false)}
+            className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white px-8"
+          >
+            <Play className="w-5 h-5 mr-2" />
+            Play
+          </Button>
+          <Button
+            onClick={() => handlePlay(true)}
+            variant="outline"
+            className="border-cyan-300 dark:border-cyan-700 bg-gradient-to-r from-cyan-100 to-emerald-100 dark:from-cyan-900/30 dark:to-emerald-900/30"
+          >
+            <Calendar className="w-5 h-5 mr-2" />
+            Daily
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  // Game view
   const targetLength = currentSize * currentSize;
 
   return (
@@ -201,47 +259,15 @@ export const ZipGame = () => {
             <Zap className="w-4 h-4 text-white" />
           </div>
           <h2 className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">Zip</h2>
+          {isDailyChallenge && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-200 dark:bg-cyan-800 text-cyan-700 dark:text-cyan-300">Daily</span>
+          )}
         </div>
-        {bestScore && (
-          <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
-            <Trophy className="w-3 h-3" />
-            <span>{formatTime(bestScore.completion_time)}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
           <Clock className="w-4 h-4 text-emerald-500" />
           <span className="tabular-nums">{formatTime(completionTime ?? elapsedTime)}</span>
         </div>
-        {!isDailyChallenge && (
-          <div className="flex gap-1">
-            {([5, 6, 7] as GridSize[]).map((s) => (
-              <Button
-                key={s}
-                variant={size === s ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSize(s)}
-                disabled={isPlaying && !isComplete}
-                className={cn(
-                  "text-xs h-7 px-2",
-                  size === s && "bg-gradient-to-r from-emerald-500 to-cyan-500 border-0"
-                )}
-              >
-                {s}×{s}
-              </Button>
-            ))}
-          </div>
-        )}
       </div>
-
-      {isDailyChallenge && (
-        <div className="mb-3 p-2 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 rounded-lg flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-          <Calendar className="w-4 h-4" />
-          <span className="font-medium text-sm">Daily Challenge (6×6)</span>
-        </div>
-      )}
 
       <p className="text-xs text-muted-foreground mb-2">
         Connect 1 to {targetLength}. Visit every cell once.
@@ -254,30 +280,15 @@ export const ZipGame = () => {
         </div>
       )}
 
-      {!isPlaying && !isComplete && (
-        <div className="mb-3 flex justify-center">
-          <Button
-            onClick={handlePlay}
-            className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white px-8"
-          >
-            <Play className="w-4 h-4 mr-2" />
-            Play
-          </Button>
-        </div>
-      )}
-
       <div className="mb-3 text-sm font-medium text-muted-foreground">
         Progress: <span className="text-emerald-600 dark:text-emerald-400">{path.length}</span> / {targetLength}
       </div>
 
       <div 
-        className={cn(
-          "grid gap-0.5 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner p-1 bg-foreground/10",
-          !isPlaying && !isComplete && "opacity-50 pointer-events-none"
-        )}
+        className="grid gap-0.5 mb-3 aspect-square rounded-lg overflow-hidden shadow-inner p-1 bg-foreground/10"
         style={{ gridTemplateColumns: `repeat(${currentSize}, 1fr)` }}
       >
-        {Array(currentSize).fill(null).map((_, rowIndex) =>
+        {puzzle && Array(currentSize).fill(null).map((_, rowIndex) =>
           Array(currentSize).fill(null).map((_, colIndex) => {
             const isStart = puzzle.start[0] === rowIndex && puzzle.start[1] === colIndex;
             const isEnd = puzzle.end[0] === rowIndex && puzzle.end[1] === colIndex;
@@ -295,13 +306,13 @@ export const ZipGame = () => {
                   "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700",
                   inPath && "from-emerald-300 to-cyan-300 dark:from-emerald-700 dark:to-cyan-700",
                   isLastInPath && !isComplete && "ring-2 ring-emerald-500 from-emerald-400 to-cyan-400 dark:from-emerald-600 dark:to-cyan-600",
-                  canClick && isPlaying && !isComplete && "hover:from-emerald-200 hover:to-cyan-200 dark:hover:from-emerald-800 dark:hover:to-cyan-800 hover:scale-105 cursor-pointer",
+                  canClick && !isComplete && "hover:from-emerald-200 hover:to-cyan-200 dark:hover:from-emerald-800 dark:hover:to-cyan-800 hover:scale-105 cursor-pointer",
                   !canClick && !inPath && "opacity-60",
                   isStart && "from-green-400 to-green-500 dark:from-green-600 dark:to-green-500",
                   isEnd && "from-red-400 to-red-500 dark:from-red-600 dark:to-red-500"
                 )}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
-                disabled={isComplete || !isPlaying}
+                disabled={isComplete}
               >
                 {isStart && <span className="text-white font-bold drop-shadow">1</span>}
                 {isEnd && <span className="text-white font-bold drop-shadow">{targetLength}</span>}
@@ -315,26 +326,21 @@ export const ZipGame = () => {
       </div>
 
       <div className="flex gap-2">
-        <Button 
-          variant="outline" 
-          onClick={() => initGame(false)} 
-          className="flex-1 text-xs h-8 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
-        >
-          <RefreshCw className="w-3 h-3 mr-1" />
-          New
+        <Button variant="outline" onClick={handleBack} className="text-xs h-8 border-emerald-300 dark:border-emerald-700">
+          ← Back
         </Button>
         <Button 
           variant="outline" 
-          onClick={() => initGame(true)} 
-          className="flex-1 text-xs h-8 border-cyan-300 dark:border-cyan-700 bg-gradient-to-r from-cyan-100 to-emerald-100 dark:from-cyan-900/30 dark:to-emerald-900/30"
+          onClick={() => initGame(isDailyChallenge)} 
+          className="flex-1 text-xs h-8 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
         >
-          <Calendar className="w-3 h-3 mr-1" />
-          Daily
+          <RefreshCw className="w-3 h-3 mr-1" />
+          Restart
         </Button>
         <Button 
           variant="outline" 
           onClick={handleUndo} 
-          disabled={path.length <= 1 || isComplete || !isPlaying}
+          disabled={path.length <= 1 || isComplete}
           className="text-xs h-8 border-cyan-300 dark:border-cyan-700 hover:bg-cyan-100 dark:hover:bg-cyan-900/50"
         >
           <Undo className="w-3 h-3 mr-1" />
