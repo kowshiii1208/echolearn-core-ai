@@ -76,9 +76,85 @@ export const javaQuestions: QuizQuestion[] = [
   { question: "Which loop is best for unknown iterations?", options: ["for", "while", "do-while", "foreach"], correctAnswer: 1 },
 ];
 
+export const javascriptQuestions: QuizQuestion[] = [
+  { question: "Which keyword declares a block-scoped variable?", options: ["var", "let", "function", "define"], correctAnswer: 1 },
+  { question: "What is the output of: typeof null?", options: ["null", "undefined", "object", "boolean"], correctAnswer: 2 },
+  { question: "Which method adds element to end of array?", options: ["push()", "pop()", "shift()", "unshift()"], correctAnswer: 0 },
+  { question: "What does '===' check?", options: ["Value only", "Type only", "Value and type", "Reference"], correctAnswer: 2 },
+  { question: "Which is not a JavaScript data type?", options: ["undefined", "number", "float", "symbol"], correctAnswer: 2 },
+  { question: "What does JSON stand for?", options: ["JavaScript Object Notation", "Java Standard Object Notation", "JavaScript Online Notation", "None"], correctAnswer: 0 },
+  { question: "Which method converts JSON to object?", options: ["JSON.stringify()", "JSON.parse()", "JSON.convert()", "JSON.toObject()"], correctAnswer: 1 },
+  { question: "What is a closure?", options: ["Function with access to outer scope", "Closed function", "Private variable", "None"], correctAnswer: 0 },
+  { question: "Which keyword creates a constant?", options: ["var", "let", "const", "final"], correctAnswer: 2 },
+  { question: "What is 'this' in JavaScript?", options: ["Current function", "Current object", "Global object always", "Undefined"], correctAnswer: 1 },
+  { question: "Which is used for async operations?", options: ["Callbacks only", "Promises", "Loops", "Variables"], correctAnswer: 1 },
+  { question: "What does map() return?", options: ["Modified original array", "New array", "Boolean", "Undefined"], correctAnswer: 1 },
+  { question: "Which creates an arrow function?", options: ["function =>", "=>", "() =>", "arrow()"], correctAnswer: 2 },
+  { question: "What is NaN?", options: ["Not a Number", "Null and None", "New Array Number", "None"], correctAnswer: 0 },
+  { question: "Which event fires when page loads?", options: ["onload", "onclick", "onchange", "onsubmit"], correctAnswer: 0 },
+];
+
+export const sqlQuestions: QuizQuestion[] = [
+  { question: "Which SQL statement retrieves data?", options: ["GET", "SELECT", "FETCH", "RETRIEVE"], correctAnswer: 1 },
+  { question: "Which clause filters records?", options: ["FILTER", "WHERE", "HAVING", "LIMIT"], correctAnswer: 1 },
+  { question: "Which keyword removes duplicates?", options: ["UNIQUE", "DISTINCT", "DIFFERENT", "SINGLE"], correctAnswer: 1 },
+  { question: "Which join returns all rows from left table?", options: ["INNER JOIN", "RIGHT JOIN", "LEFT JOIN", "CROSS JOIN"], correctAnswer: 2 },
+  { question: "Which adds new records to table?", options: ["ADD", "INSERT", "CREATE", "UPDATE"], correctAnswer: 1 },
+  { question: "Which modifies existing records?", options: ["MODIFY", "CHANGE", "UPDATE", "ALTER"], correctAnswer: 2 },
+  { question: "Which deletes records from table?", options: ["REMOVE", "DELETE", "DROP", "TRUNCATE"], correctAnswer: 1 },
+  { question: "Which creates a new table?", options: ["NEW TABLE", "CREATE TABLE", "ADD TABLE", "MAKE TABLE"], correctAnswer: 1 },
+  { question: "Which orders results ascending?", options: ["ORDER BY ASC", "SORT ASC", "ARRANGE ASC", "GROUP ASC"], correctAnswer: 0 },
+  { question: "Which counts number of rows?", options: ["SUM()", "COUNT()", "TOTAL()", "NUM()"], correctAnswer: 1 },
+  { question: "Which groups rows with same values?", options: ["COMBINE BY", "GROUP BY", "COLLECT BY", "MERGE BY"], correctAnswer: 1 },
+  { question: "Which limits number of records?", options: ["TOP", "LIMIT", "MAX", "Both A and B"], correctAnswer: 3 },
+  { question: "What does NULL represent?", options: ["Zero", "Empty string", "Unknown/missing value", "False"], correctAnswer: 2 },
+  { question: "Which creates an index?", options: ["ADD INDEX", "CREATE INDEX", "NEW INDEX", "MAKE INDEX"], correctAnswer: 1 },
+  { question: "Which removes a table completely?", options: ["DELETE TABLE", "REMOVE TABLE", "DROP TABLE", "CLEAR TABLE"], correctAnswer: 2 },
+];
+
+export const htmlCssQuestions: QuizQuestion[] = [
+  { question: "What does HTML stand for?", options: ["Hyper Text Markup Language", "High Tech Modern Language", "Hyper Transfer Markup Language", "None"], correctAnswer: 0 },
+  { question: "Which tag creates a hyperlink?", options: ["<link>", "<a>", "<href>", "<url>"], correctAnswer: 1 },
+  { question: "Which CSS property changes text color?", options: ["text-color", "font-color", "color", "foreground"], correctAnswer: 2 },
+  { question: "Which is the correct CSS syntax?", options: ["body:color=black", "body {color: black;}", "{body;color:black}", "body = color: black"], correctAnswer: 1 },
+  { question: "Which HTML tag is for largest heading?", options: ["<h6>", "<heading>", "<h1>", "<head>"], correctAnswer: 2 },
+  { question: "Which CSS property adds space inside element?", options: ["margin", "padding", "spacing", "border"], correctAnswer: 1 },
+  { question: "Which creates an unordered list?", options: ["<ol>", "<ul>", "<li>", "<list>"], correctAnswer: 1 },
+  { question: "Which CSS display value hides element?", options: ["hidden", "invisible", "none", "disappear"], correctAnswer: 2 },
+  { question: "Which HTML5 tag is for navigation?", options: ["<navigate>", "<nav>", "<menu>", "<navbar>"], correctAnswer: 1 },
+  { question: "Which CSS property makes text bold?", options: ["font-weight", "text-bold", "font-style", "text-weight"], correctAnswer: 0 },
+  { question: "Which is external CSS?", options: ["<style> tag", "style attribute", "<link> tag", "All of above"], correctAnswer: 2 },
+  { question: "Which creates a line break?", options: ["<break>", "<lb>", "<br>", "<newline>"], correctAnswer: 2 },
+  { question: "Which CSS positions element relative to viewport?", options: ["relative", "absolute", "fixed", "static"], correctAnswer: 2 },
+  { question: "Which HTML attribute specifies image source?", options: ["href", "src", "link", "source"], correctAnswer: 1 },
+  { question: "Which CSS property creates rounded corners?", options: ["corner-radius", "border-radius", "round-corner", "edge-radius"], correctAnswer: 1 },
+];
+
+export const dataStructuresQuestions: QuizQuestion[] = [
+  { question: "Which data structure uses LIFO?", options: ["Queue", "Stack", "Array", "Linked List"], correctAnswer: 1 },
+  { question: "Which data structure uses FIFO?", options: ["Stack", "Queue", "Tree", "Graph"], correctAnswer: 1 },
+  { question: "What is time complexity of array access?", options: ["O(n)", "O(log n)", "O(1)", "O(n²)"], correctAnswer: 2 },
+  { question: "Which is not a linear data structure?", options: ["Array", "Stack", "Queue", "Tree"], correctAnswer: 3 },
+  { question: "What is a binary tree?", options: ["Max 2 children per node", "Exactly 2 children", "Min 2 children", "None"], correctAnswer: 0 },
+  { question: "Which traversal visits root first?", options: ["Inorder", "Preorder", "Postorder", "Level order"], correctAnswer: 1 },
+  { question: "What is a hash table?", options: ["Key-value storage", "Sequential list", "Tree structure", "Graph"], correctAnswer: 0 },
+  { question: "Which sorting has O(n log n) average?", options: ["Bubble sort", "Selection sort", "Quick sort", "Insertion sort"], correctAnswer: 2 },
+  { question: "What is a linked list?", options: ["Continuous memory", "Nodes with pointers", "Fixed size array", "None"], correctAnswer: 1 },
+  { question: "Which search has O(log n)?", options: ["Linear search", "Binary search", "Jump search", "Both B and C"], correctAnswer: 1 },
+  { question: "What is a heap?", options: ["Complete binary tree", "Random tree", "Linked list", "Array only"], correctAnswer: 0 },
+  { question: "Which is used in BFS?", options: ["Stack", "Queue", "Array", "Linked List"], correctAnswer: 1 },
+  { question: "Which is used in DFS?", options: ["Queue", "Stack", "Heap", "Hash Table"], correctAnswer: 1 },
+  { question: "What is Big O notation?", options: ["Time complexity", "Space complexity", "Algorithm efficiency", "All of above"], correctAnswer: 3 },
+  { question: "What is a graph edge?", options: ["Node", "Connection between nodes", "Root element", "Leaf"], correctAnswer: 1 },
+];
+
 export const quizCategories = [
   { id: 'c', name: 'C', icon: '🔧', color: 'from-blue-500 to-blue-600', questions: cQuestions },
   { id: 'cpp', name: 'C++', icon: '⚙️', color: 'from-purple-500 to-purple-600', questions: cppQuestions },
   { id: 'python', name: 'Python', icon: '🐍', color: 'from-green-500 to-green-600', questions: pythonQuestions },
   { id: 'java', name: 'Java', icon: '☕', color: 'from-orange-500 to-orange-600', questions: javaQuestions },
+  { id: 'javascript', name: 'JavaScript', icon: '⚡', color: 'from-yellow-500 to-yellow-600', questions: javascriptQuestions },
+  { id: 'sql', name: 'SQL', icon: '🗃️', color: 'from-cyan-500 to-cyan-600', questions: sqlQuestions },
+  { id: 'htmlcss', name: 'HTML/CSS', icon: '🎨', color: 'from-pink-500 to-pink-600', questions: htmlCssQuestions },
+  { id: 'dsa', name: 'DSA', icon: '🧮', color: 'from-indigo-500 to-indigo-600', questions: dataStructuresQuestions },
 ];
