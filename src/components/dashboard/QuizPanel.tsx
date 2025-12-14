@@ -2,31 +2,33 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Play } from "lucide-react";
-import { quizCategories } from "./quizData";
-import { QuizGame } from "./QuizGame";
+import { quizCategories } from "@/components/games/quizData";
+import { QuizGame } from "@/components/games/QuizGame";
 import { cn } from "@/lib/utils";
 
-export const QuizSection = () => {
+export const QuizPanel = () => {
   const [selectedCategory, setSelectedCategory] = useState<typeof quizCategories[0] | null>(null);
 
   if (selectedCategory) {
     return (
-      <QuizGame 
-        category={selectedCategory} 
-        onBack={() => setSelectedCategory(null)} 
-      />
+      <div className="animate-fade-in">
+        <QuizGame 
+          category={selectedCategory} 
+          onBack={() => setSelectedCategory(null)} 
+        />
+      </div>
     );
   }
 
   return (
-    <div className="mt-8 animate-fade-in">
+    <div className="animate-fade-in">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20">
           <BookOpen className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground">Programming Quizzes</h2>
-          <p className="text-muted-foreground text-sm">Test your coding knowledge!</p>
+          <h1 className="text-2xl font-bold text-foreground">Programming Quizzes</h1>
+          <p className="text-muted-foreground">Test your coding knowledge!</p>
         </div>
       </div>
 
