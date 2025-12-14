@@ -2,7 +2,6 @@ import { SudokuGame } from "@/components/games/SudokuGame";
 import { QueensGame } from "@/components/games/QueensGame";
 import { ZipGame } from "@/components/games/ZipGame";
 import { Leaderboard } from "@/components/games/Leaderboard";
-import { QuizSection } from "@/components/games/QuizSection";
 import { Gamepad2, Calendar, CheckCircle, Flame } from "lucide-react";
 import { useDailyChallengeStatus, useGameStreak } from "@/hooks/useGameScores";
 import { cn } from "@/lib/utils";
@@ -86,8 +85,6 @@ export const GamesPanel = () => {
       <div className="mt-6">
         <Leaderboard />
       </div>
-
-      <QuizSection />
     </div>
   );
 };

@@ -5,11 +5,12 @@ import {
   FileText, 
   Home,
   X,
-  Gamepad2
+  Gamepad2,
+  BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games";
+type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz";
 
 interface DashboardSidebarProps {
   activePanel: ActivePanel;
@@ -24,6 +25,7 @@ const menuItems = [
   { id: "scanner" as const, label: "Scan Notes", icon: ScanLine },
   { id: "notes" as const, label: "My Notes", icon: FileText },
   { id: "games" as const, label: "Brain Games", icon: Gamepad2 },
+  { id: "quiz" as const, label: "Quizzes", icon: BookOpen },
 ];
 
 export const DashboardSidebar = ({ 

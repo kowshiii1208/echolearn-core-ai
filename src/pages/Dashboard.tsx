@@ -9,8 +9,9 @@ import { ImageScannerPanel } from "@/components/dashboard/ImageScannerPanel";
 import { NotesPanel } from "@/components/dashboard/NotesPanel";
 import { WelcomePanel } from "@/components/dashboard/WelcomePanel";
 import { GamesPanel } from "@/components/dashboard/GamesPanel";
+import { QuizPanel } from "@/components/dashboard/QuizPanel";
 
-type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games";
+type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -81,6 +82,7 @@ const Dashboard = () => {
           {activePanel === "scanner" && <ImageScannerPanel user={user} />}
           {activePanel === "notes" && <NotesPanel user={user} />}
           {activePanel === "games" && <GamesPanel />}
+          {activePanel === "quiz" && <QuizPanel />}
         </main>
       </div>
     </div>
