@@ -196,17 +196,24 @@ export const ZipGame = () => {
   // Menu view (before playing)
   if (!isPlaying) {
     return (
-      <Card className="p-6 bg-gradient-to-br from-emerald-50 to-cyan-50 dark:from-emerald-950/30 dark:to-cyan-950/30 border-2 border-emerald-200 dark:border-emerald-800 shadow-lg flex flex-col items-center justify-center min-h-[320px]">
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 mb-4">
-          <Zap className="w-12 h-12 text-white" />
+      <Card className="p-6 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-cyan-950/40 border-2 border-emerald-200 dark:border-emerald-800 shadow-xl shadow-emerald-200/50 dark:shadow-emerald-900/30 flex flex-col items-center justify-center min-h-[360px] relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-transparent rounded-full blur-2xl" />
+        <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-tl from-cyan-400/20 to-transparent rounded-full blur-2xl" />
+        
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 mb-4 shadow-lg shadow-emerald-400/40 dark:shadow-emerald-600/30 animate-pulse-soft relative">
+          <Zap className="w-14 h-14 text-white drop-shadow-lg" />
+          <div className="absolute inset-0 rounded-2xl bg-white/20 animate-pulse" />
         </div>
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent mb-1">
           Zip
         </h2>
+        <p className="text-sm text-muted-foreground mb-4">Connect all cells in order</p>
+        
         {bestScore && (
-          <div className="flex items-center gap-1 text-sm text-emerald-600 dark:text-emerald-400 mb-4">
-            <Trophy className="w-4 h-4" />
-            <span>Best: {formatTime(bestScore.completion_time)}</span>
+          <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400 mb-4 px-4 py-2 rounded-full bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800">
+            <Trophy className="w-4 h-4 text-amber-500" />
+            <span className="font-medium">Best: {formatTime(bestScore.completion_time)}</span>
           </div>
         )}
 
@@ -218,8 +225,10 @@ export const ZipGame = () => {
               size="sm"
               onClick={() => setSize(s)}
               className={cn(
-                "text-sm px-4",
-                size === s && "bg-gradient-to-r from-emerald-500 to-cyan-500 border-0"
+                "text-sm px-4 py-2 transition-all duration-300",
+                size === s 
+                  ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 border-0 shadow-lg shadow-emerald-400/40 scale-105"
+                  : "hover:scale-105 hover:border-emerald-400"
               )}
             >
               {getSizeLabel(s)}
@@ -230,7 +239,7 @@ export const ZipGame = () => {
         <div className="flex gap-3">
           <Button
             onClick={() => handlePlay(false)}
-            className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white px-8"
+            className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 text-white px-8 py-5 text-lg shadow-lg shadow-emerald-400/40 hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
             <Play className="w-5 h-5 mr-2" />
             Play
@@ -238,9 +247,9 @@ export const ZipGame = () => {
           <Button
             onClick={() => handlePlay(true)}
             variant="outline"
-            className="border-cyan-300 dark:border-cyan-700 bg-gradient-to-r from-cyan-100 to-emerald-100 dark:from-cyan-900/30 dark:to-emerald-900/30"
+            className="border-cyan-300 dark:border-cyan-700 bg-gradient-to-r from-cyan-100 to-emerald-100 dark:from-cyan-900/40 dark:to-emerald-900/40 hover:scale-105 transition-all duration-300 py-5"
           >
-            <Calendar className="w-5 h-5 mr-2" />
+            <Calendar className="w-5 h-5 mr-2 text-cyan-500" />
             Daily
           </Button>
         </div>
