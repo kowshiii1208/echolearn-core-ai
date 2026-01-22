@@ -67,14 +67,14 @@ const generateColorRegions = (size: BoardSize, seed?: number): number[][] => {
 };
 
 const regionColors = [
-  "bg-gradient-to-br from-rose-300 to-rose-400 dark:from-rose-800 dark:to-rose-700",
-  "bg-gradient-to-br from-sky-300 to-sky-400 dark:from-sky-800 dark:to-sky-700",
-  "bg-gradient-to-br from-emerald-300 to-emerald-400 dark:from-emerald-800 dark:to-emerald-700",
-  "bg-gradient-to-br from-amber-300 to-amber-400 dark:from-amber-800 dark:to-amber-700",
-  "bg-gradient-to-br from-violet-300 to-violet-400 dark:from-violet-800 dark:to-violet-700",
-  "bg-gradient-to-br from-pink-300 to-pink-400 dark:from-pink-800 dark:to-pink-700",
-  "bg-gradient-to-br from-orange-300 to-orange-400 dark:from-orange-800 dark:to-orange-700",
-  "bg-gradient-to-br from-cyan-300 to-cyan-400 dark:from-cyan-800 dark:to-cyan-700",
+  "bg-gradient-to-br from-rose-400 to-rose-500 dark:from-rose-700 dark:to-rose-600 shadow-rose-300/50 dark:shadow-rose-800/50",
+  "bg-gradient-to-br from-sky-400 to-sky-500 dark:from-sky-700 dark:to-sky-600 shadow-sky-300/50 dark:shadow-sky-800/50",
+  "bg-gradient-to-br from-emerald-400 to-emerald-500 dark:from-emerald-700 dark:to-emerald-600 shadow-emerald-300/50 dark:shadow-emerald-800/50",
+  "bg-gradient-to-br from-amber-400 to-amber-500 dark:from-amber-700 dark:to-amber-600 shadow-amber-300/50 dark:shadow-amber-800/50",
+  "bg-gradient-to-br from-violet-400 to-violet-500 dark:from-violet-700 dark:to-violet-600 shadow-violet-300/50 dark:shadow-violet-800/50",
+  "bg-gradient-to-br from-pink-400 to-pink-500 dark:from-pink-700 dark:to-pink-600 shadow-pink-300/50 dark:shadow-pink-800/50",
+  "bg-gradient-to-br from-orange-400 to-orange-500 dark:from-orange-700 dark:to-orange-600 shadow-orange-300/50 dark:shadow-orange-800/50",
+  "bg-gradient-to-br from-cyan-400 to-cyan-500 dark:from-cyan-700 dark:to-cyan-600 shadow-cyan-300/50 dark:shadow-cyan-800/50",
 ];
 
 export const QueensGame = () => {
@@ -130,12 +130,13 @@ export const QueensGame = () => {
 
   const currentSize = isDailyChallenge ? 6 : size;
 
-  const checkConflicts = (board: boolean[][]): Set<string> => {
+  const checkConflicts = useCallback((board: boolean[][], boardRegions: number[][]): Set<string> => {
     const newConflicts = new Set<string>();
     const queenPositions: [number, number][] = [];
+    const boardSize = board.length;
     
-    for (let r = 0; r < currentSize; r++) {
-      for (let c = 0; c < currentSize; c++) {
+    for (let r = 0; r < boardSize; r++) {
+      for (let c = 0; c < boardSize; c++) {
         if (board[r][c]) {
           queenPositions.push([r, c]);
         }
@@ -147,12 +148,14 @@ export const QueensGame = () => {
         const [r1, c1] = queenPositions[i];
         const [r2, c2] = queenPositions[j];
         
+        // Check row, column, and diagonal conflicts
         if (r1 === r2 || c1 === c2 || Math.abs(r1 - r2) === Math.abs(c1 - c2)) {
           newConflicts.add(`${r1}-${c1}`);
           newConflicts.add(`${r2}-${c2}`);
         }
         
-        if (regions[r1][c1] === regions[r2][c2]) {
+        // Check same region conflict
+        if (boardRegions[r1]?.[c1] === boardRegions[r2]?.[c2]) {
           newConflicts.add(`${r1}-${c1}`);
           newConflicts.add(`${r2}-${c2}`);
         }
@@ -160,41 +163,45 @@ export const QueensGame = () => {
     }
     
     return newConflicts;
-  };
+  }, []);
 
-  const checkWin = (board: boolean[][]): boolean => {
+  const checkWin = useCallback((board: boolean[][], boardRegions: number[][]): boolean => {
     let queenCount = 0;
     const regionsWithQueens = new Set<number>();
+    const boardSize = board.length;
     
-    for (let r = 0; r < currentSize; r++) {
-      for (let c = 0; c < currentSize; c++) {
+    for (let r = 0; r < boardSize; r++) {
+      for (let c = 0; c < boardSize; c++) {
         if (board[r][c]) {
           queenCount++;
-          regionsWithQueens.add(regions[r][c]);
+          if (boardRegions[r]?.[c] !== undefined) {
+            regionsWithQueens.add(boardRegions[r][c]);
+          }
         }
       }
     }
     
-    return queenCount === currentSize && 
-           regionsWithQueens.size === currentSize && 
-           checkConflicts(board).size === 0;
-  };
+    return queenCount === boardSize && 
+           regionsWithQueens.size === boardSize && 
+           checkConflicts(board, boardRegions).size === 0;
+  }, [checkConflicts]);
 
   const handleCellClick = (row: number, col: number) => {
-    if (isComplete || !isPlaying) return;
+    if (isComplete || !isPlaying || regions.length === 0) return;
     
     const newQueens = queens.map(r => [...r]);
     newQueens[row][col] = !newQueens[row][col];
     setQueens(newQueens);
     
-    const newConflicts = checkConflicts(newQueens);
+    const newConflicts = checkConflicts(newQueens, regions);
     setConflicts(newConflicts);
     
-    if (checkWin(newQueens)) {
+    if (checkWin(newQueens, regions)) {
       setIsComplete(true);
       setCompletionTime(elapsedTime);
       stopTimer();
-      saveScore({ difficulty: `${currentSize}x${currentSize}`, completionTime: elapsedTime, isDailyChallenge });
+      const gameSize = regions.length;
+      saveScore({ difficulty: `${gameSize}x${gameSize}`, completionTime: elapsedTime, isDailyChallenge });
       toast({ title: "👑 Congratulations!", description: `You placed all queens correctly in ${elapsedTime} seconds!` });
     }
   };
@@ -224,17 +231,24 @@ export const QueensGame = () => {
   // Menu view (before playing)
   if (!isPlaying) {
     return (
-      <Card className="p-6 bg-gradient-to-br from-violet-50 to-pink-50 dark:from-violet-950/30 dark:to-pink-950/30 border-2 border-violet-200 dark:border-violet-800 shadow-lg flex flex-col items-center justify-center min-h-[320px]">
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 mb-4">
-          <Crown className="w-12 h-12 text-white" />
+      <Card className="p-6 bg-gradient-to-br from-violet-50 via-purple-50 to-pink-50 dark:from-violet-950/40 dark:via-purple-950/30 dark:to-pink-950/40 border-2 border-violet-200 dark:border-violet-800 shadow-xl shadow-violet-200/50 dark:shadow-violet-900/30 flex flex-col items-center justify-center min-h-[360px] relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-violet-400/20 to-transparent rounded-full blur-2xl" />
+        <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-tl from-pink-400/20 to-transparent rounded-full blur-2xl" />
+        
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 mb-4 shadow-lg shadow-violet-400/40 dark:shadow-violet-600/30 animate-pulse-soft relative">
+          <Crown className="w-14 h-14 text-white drop-shadow-lg" />
+          <div className="absolute inset-0 rounded-2xl bg-white/20 animate-pulse" />
         </div>
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent mb-2">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-1">
           Queens
         </h2>
+        <p className="text-sm text-muted-foreground mb-4">Place queens without conflicts</p>
+        
         {bestScore && (
-          <div className="flex items-center gap-1 text-sm text-violet-600 dark:text-violet-400 mb-4">
-            <Trophy className="w-4 h-4" />
-            <span>Best: {formatTime(bestScore.completion_time)}</span>
+          <div className="flex items-center gap-2 text-sm text-violet-600 dark:text-violet-400 mb-4 px-4 py-2 rounded-full bg-violet-100 dark:bg-violet-900/40 border border-violet-200 dark:border-violet-800">
+            <Trophy className="w-4 h-4 text-amber-500" />
+            <span className="font-medium">Best: {formatTime(bestScore.completion_time)}</span>
           </div>
         )}
 
@@ -246,8 +260,10 @@ export const QueensGame = () => {
               size="sm"
               onClick={() => setSize(s)}
               className={cn(
-                "text-sm px-3",
-                size === s && "bg-gradient-to-r from-violet-500 to-pink-500 border-0"
+                "text-sm px-4 py-2 transition-all duration-300",
+                size === s 
+                  ? "bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 border-0 shadow-lg shadow-violet-400/40 scale-105" 
+                  : "hover:scale-105 hover:border-violet-400"
               )}
             >
               {getSizeLabel(s)}
@@ -258,7 +274,7 @@ export const QueensGame = () => {
         <div className="flex gap-3">
           <Button
             onClick={() => handlePlay(false)}
-            className="bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-600 hover:to-pink-600 text-white px-8"
+            className="bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:from-violet-600 hover:via-purple-600 hover:to-pink-600 text-white px-8 py-5 text-lg shadow-lg shadow-violet-400/40 hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
             <Play className="w-5 h-5 mr-2" />
             Play
@@ -266,9 +282,9 @@ export const QueensGame = () => {
           <Button
             onClick={() => handlePlay(true)}
             variant="outline"
-            className="border-pink-300 dark:border-pink-700 bg-gradient-to-r from-pink-100 to-violet-100 dark:from-pink-900/30 dark:to-violet-900/30"
+            className="border-pink-300 dark:border-pink-700 bg-gradient-to-r from-pink-100 to-violet-100 dark:from-pink-900/40 dark:to-violet-900/40 hover:scale-105 transition-all duration-300 py-5"
           >
-            <Calendar className="w-5 h-5 mr-2" />
+            <Calendar className="w-5 h-5 mr-2 text-pink-500" />
             Daily
           </Button>
         </div>

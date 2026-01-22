@@ -229,17 +229,24 @@ export const SudokuGame = () => {
   // Menu view (before playing)
   if (!isPlaying) {
     return (
-      <Card className="p-6 bg-gradient-to-br from-rose-50 to-amber-50 dark:from-rose-950/30 dark:to-amber-950/30 border-2 border-rose-200 dark:border-rose-800 shadow-lg flex flex-col items-center justify-center min-h-[320px]">
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 mb-4">
-          <Grid3X3 className="w-12 h-12 text-white" />
+      <Card className="p-6 bg-gradient-to-br from-rose-50 via-orange-50 to-amber-50 dark:from-rose-950/40 dark:via-orange-950/30 dark:to-amber-950/40 border-2 border-rose-200 dark:border-rose-800 shadow-xl shadow-rose-200/50 dark:shadow-rose-900/30 flex flex-col items-center justify-center min-h-[360px] relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-rose-400/20 to-transparent rounded-full blur-2xl" />
+        <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-tl from-amber-400/20 to-transparent rounded-full blur-2xl" />
+        
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-rose-500 via-orange-500 to-amber-500 mb-4 shadow-lg shadow-rose-400/40 dark:shadow-rose-600/30 animate-pulse-soft relative">
+          <Grid3X3 className="w-14 h-14 text-white drop-shadow-lg" />
+          <div className="absolute inset-0 rounded-2xl bg-white/20 animate-pulse" />
         </div>
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-amber-600 bg-clip-text text-transparent mb-2">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-rose-600 via-orange-600 to-amber-600 bg-clip-text text-transparent mb-1">
           Sudoku
         </h2>
+        <p className="text-sm text-muted-foreground mb-4">Classic number puzzle</p>
+        
         {bestScore && (
-          <div className="flex items-center gap-1 text-sm text-amber-600 dark:text-amber-400 mb-4">
-            <Trophy className="w-4 h-4" />
-            <span>Best: {formatTime(bestScore.completion_time)}</span>
+          <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 mb-4 px-4 py-2 rounded-full bg-amber-100 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-800">
+            <Trophy className="w-4 h-4 text-amber-500" />
+            <span className="font-medium">Best: {formatTime(bestScore.completion_time)}</span>
           </div>
         )}
 
@@ -251,8 +258,10 @@ export const SudokuGame = () => {
               size="sm"
               onClick={() => setDifficulty(d)}
               className={cn(
-                "text-sm px-4",
-                difficulty === d && "bg-gradient-to-r from-rose-500 to-amber-500 border-0"
+                "text-sm px-4 py-2 transition-all duration-300",
+                difficulty === d 
+                  ? "bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 border-0 shadow-lg shadow-rose-400/40 scale-105"
+                  : "hover:scale-105 hover:border-rose-400"
               )}
             >
               {d.charAt(0).toUpperCase() + d.slice(1)}
@@ -263,7 +272,7 @@ export const SudokuGame = () => {
         <div className="flex gap-3">
           <Button
             onClick={() => handlePlay(false)}
-            className="bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white px-8"
+            className="bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 hover:from-rose-600 hover:via-orange-600 hover:to-amber-600 text-white px-8 py-5 text-lg shadow-lg shadow-rose-400/40 hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
             <Play className="w-5 h-5 mr-2" />
             Play
@@ -271,9 +280,9 @@ export const SudokuGame = () => {
           <Button
             onClick={() => handlePlay(true)}
             variant="outline"
-            className="border-amber-300 dark:border-amber-700 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30"
+            className="border-amber-300 dark:border-amber-700 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40 hover:scale-105 transition-all duration-300 py-5"
           >
-            <Calendar className="w-5 h-5 mr-2" />
+            <Calendar className="w-5 h-5 mr-2 text-amber-500" />
             Daily
           </Button>
         </div>
