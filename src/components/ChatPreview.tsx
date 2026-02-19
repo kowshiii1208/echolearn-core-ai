@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Sparkles, User } from "lucide-react";
+import { Send, Sparkles, User, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const demoMessages = [
@@ -29,10 +29,7 @@ export const ChatPreview = () => {
   useEffect(() => {
     const showNextMessage = () => {
       const currentIndex = messageIndexRef.current;
-      
-      if (currentIndex >= demoMessages.length) {
-        return; // Stop when all messages shown
-      }
+      if (currentIndex >= demoMessages.length) return;
 
       const currentMessage = demoMessages[currentIndex];
       
@@ -56,22 +53,25 @@ export const ChatPreview = () => {
   }, []);
 
   return (
-    <section className="py-24 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+    <section className="py-28 px-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(195_35%_42%/0.06)_0%,transparent_60%)]" />
+      
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Text content */}
           <div className="order-2 lg:order-1">
-            <span className="inline-block text-sm font-medium text-primary bg-secondary px-4 py-1.5 rounded-full mb-4">
+            <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 px-5 py-2 rounded-full mb-6">
+              <Sparkles className="w-3.5 h-3.5" />
               Conversational AI
             </span>
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-6">
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-6 tracking-tight">
               Learn Through Natural Conversation
             </h2>
-            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+            <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
               Ask anything, the way you'd ask a friend. EchoLearn explains complex topics 
               using analogies and examples that make sense to you.
             </p>
-            <ul className="space-y-4">
+            <ul className="space-y-5">
               {[
                 "Patient explanations, never judgmental",
                 "Adapts to your learning style",
@@ -79,12 +79,10 @@ export const ChatPreview = () => {
                 "Remembers your progress",
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-3 text-foreground">
-                  <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                    <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
                   </div>
-                  {item}
+                  <span className="font-medium">{item}</span>
                 </li>
               ))}
             </ul>
@@ -92,77 +90,85 @@ export const ChatPreview = () => {
 
           {/* Chat mockup */}
           <div className="order-1 lg:order-2">
-            <div className="bg-card rounded-3xl shadow-elevated p-6 max-w-md mx-auto">
-              {/* Chat header */}
-              <div className="flex items-center gap-3 pb-4 border-b border-border mb-4">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-primary-foreground" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-foreground">EchoLearn Tutor</h4>
-                  <p className="text-xs text-muted-foreground">Always here to help</p>
-                </div>
-              </div>
-
-              {/* Messages */}
-              <div className="space-y-4 min-h-[320px] max-h-[320px] overflow-y-auto">
-                {visibleMessages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : ""}`}
-                  >
-                    <div 
-                      className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        message.role === "user" 
-                          ? "bg-accent" 
-                          : "bg-primary"
-                      }`}
-                    >
-                      {message.role === "user" ? (
-                        <User className="w-4 h-4 text-accent-foreground" />
-                      ) : (
-                        <Sparkles className="w-4 h-4 text-primary-foreground" />
-                      )}
-                    </div>
-                    <div 
-                      className={`rounded-2xl px-4 py-3 max-w-[80%] ${
-                        message.role === "user"
-                          ? "bg-accent text-accent-foreground rounded-tr-sm"
-                          : "bg-secondary text-secondary-foreground rounded-tl-sm"
-                      }`}
-                    >
-                      <p className="text-sm whitespace-pre-line">{message.content}</p>
+            <div className="relative">
+              {/* Glow effect behind card */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/10 rounded-3xl blur-2xl scale-95" />
+              
+              <div className="relative bg-card/80 backdrop-blur-xl border border-border/50 rounded-3xl p-6 shadow-elevated max-w-md mx-auto">
+                {/* Chat header */}
+                <div className="flex items-center gap-3 pb-4 border-b border-border/50 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
+                    <Sparkles className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground">EchoLearn Tutor</h4>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                      <p className="text-xs text-muted-foreground">Always here to help</p>
                     </div>
                   </div>
-                ))}
-                
-                {isTyping && (
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-4 h-4 text-primary-foreground" />
-                    </div>
-                    <div className="bg-secondary rounded-2xl rounded-tl-sm px-4 py-3">
-                      <div className="flex gap-1">
-                        <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                        <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                        <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+
+                {/* Messages */}
+                <div className="space-y-4 min-h-[320px] max-h-[320px] overflow-y-auto">
+                  {visibleMessages.map((message, index) => (
+                    <div
+                      key={index}
+                      className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : ""} animate-fade-in`}
+                    >
+                      <div 
+                        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          message.role === "user" 
+                            ? "bg-gradient-to-br from-accent to-accent/80" 
+                            : "bg-gradient-to-br from-primary to-primary/80"
+                        } shadow-md`}
+                      >
+                        {message.role === "user" ? (
+                          <User className="w-4 h-4 text-white" />
+                        ) : (
+                          <Sparkles className="w-4 h-4 text-white" />
+                        )}
+                      </div>
+                      <div 
+                        className={`rounded-2xl px-4 py-3 max-w-[80%] ${
+                          message.role === "user"
+                            ? "bg-gradient-to-br from-accent to-accent/90 text-accent-foreground rounded-tr-sm"
+                            : "bg-secondary/80 text-secondary-foreground rounded-tl-sm border border-border/30"
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-line">{message.content}</p>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  ))}
+                  
+                  {isTyping && (
+                    <div className="flex gap-3 animate-fade-in">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center flex-shrink-0 shadow-md">
+                        <Sparkles className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="bg-secondary/80 border border-border/30 rounded-2xl rounded-tl-sm px-4 py-3">
+                        <div className="flex gap-1.5">
+                          <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-              {/* Input */}
-              <div className="mt-4 flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Ask anything..."
-                  className="flex-1 bg-muted rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  disabled
-                />
-                <Button size="icon" className="rounded-xl w-12 h-12">
-                  <Send className="w-5 h-5" />
-                </Button>
+                {/* Input */}
+                <div className="mt-4 flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ask anything..."
+                    className="flex-1 bg-background/60 backdrop-blur-sm border border-border/50 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
+                    disabled
+                  />
+                  <Button size="icon" className="rounded-xl w-12 h-12 bg-gradient-to-br from-primary to-accent shadow-lg hover:shadow-xl transition-shadow">
+                    <Send className="w-5 h-5 text-white" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

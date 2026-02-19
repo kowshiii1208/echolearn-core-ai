@@ -6,7 +6,8 @@ import {
   Home,
   X,
   Gamepad2,
-  BookOpen
+  BookOpen,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,33 +40,35 @@ export const DashboardSidebar = ({
       {/* Mobile overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
       
       {/* Sidebar */}
       <aside className={cn(
-        "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-200 ease-in-out",
+        "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-card/50 backdrop-blur-xl border-r border-border/50 transform transition-transform duration-200 ease-in-out",
         isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         <div className="flex flex-col h-full">
           {/* Mobile close button */}
           <div className="lg:hidden flex justify-end p-4">
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="rounded-xl">
               <X className="w-5 h-5" />
             </Button>
           </div>
           
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 p-3 space-y-1">
             {menuItems.map((item) => (
               <Button
                 key={item.id}
                 variant={activePanel === item.id ? "secondary" : "ghost"}
                 className={cn(
-                  "w-full justify-start gap-3 h-12",
-                  activePanel === item.id && "bg-primary/10 text-primary hover:bg-primary/15"
+                  "w-full justify-start gap-3 h-11 rounded-xl font-medium transition-all duration-200",
+                  activePanel === item.id 
+                    ? "bg-primary/10 text-primary border border-primary/20 shadow-sm hover:bg-primary/15" 
+                    : "hover:bg-muted/50"
                 )}
                 onClick={() => {
                   setActivePanel(item.id);
@@ -79,10 +82,13 @@ export const DashboardSidebar = ({
           </nav>
           
           {/* Footer */}
-          <div className="p-4 border-t border-border">
-            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 p-4">
-              <p className="text-sm font-medium text-foreground mb-1">Pro Tip</p>
-              <p className="text-xs text-muted-foreground">
+          <div className="p-3">
+            <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 border border-primary/10 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <p className="text-sm font-semibold text-foreground">Pro Tip</p>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Use the AI Tutor to explain concepts from your scanned notes!
               </p>
             </div>
