@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { BookOpen, Mail, Lock, User, Sparkles, ArrowRight, GraduationCap, Brain, Zap } from "lucide-react";
 import { z } from "zod";
+import { PageTransition } from "@/components/PageTransition";
 
 const authSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -107,6 +108,7 @@ const Auth = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background flex relative overflow-hidden">
       {/* Animated background orbs */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-[120px] animate-float pointer-events-none" />
@@ -317,6 +319,7 @@ const Auth = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

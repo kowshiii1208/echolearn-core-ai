@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { PageTransition } from "@/components/PageTransition";
 import { User, Session } from "@supabase/supabase-js";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
@@ -59,6 +60,7 @@ const Dashboard = () => {
   if (!user) return null;
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background flex">
       <DashboardSidebar 
         activePanel={activePanel} 
@@ -86,6 +88,7 @@ const Dashboard = () => {
         </main>
       </div>
     </div>
+    </PageTransition>
   );
 };
 
