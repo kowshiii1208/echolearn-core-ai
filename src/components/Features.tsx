@@ -1,4 +1,5 @@
 import { Camera, MessageCircle, RefreshCw, Mic, Heart, Zap } from "lucide-react";
+import { motion } from "framer-motion";
 
 const features = [
   {
@@ -61,7 +62,13 @@ export const Features = () => {
       
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Section header */}
-        <div className="text-center mb-20">
+        <motion.div
+          className="text-center mb-20"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 px-5 py-2 rounded-full mb-6">
             <Zap className="w-3.5 h-3.5" />
             Powerful Features
@@ -72,21 +79,19 @@ export const Features = () => {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             EchoLearn combines cutting-edge AI with proven learning science to help you master any subject.
           </p>
-        </div>
+        </motion.div>
 
         {/* Features grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {features.map((feature, index) => (
-            <div
+            <motion.div
               key={feature.title}
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.45, delay: index * 0.08, ease: "easeOut" }}
               className={`group relative bg-background/80 backdrop-blur-sm border border-border/50 p-8 rounded-2xl transition-all duration-500 hover:-translate-y-1.5 ${feature.glow}`}
-              style={{ 
-                animationDelay: `${index * 0.1}s`,
-                opacity: 0,
-                animation: "fade-in 0.6s ease-out forwards"
-              }}
             >
-              {/* Gradient background on hover */}
               <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
               
               <div className="relative z-10">
@@ -100,7 +105,7 @@ export const Features = () => {
                   {feature.description}
                 </p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

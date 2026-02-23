@@ -1,4 +1,5 @@
 import { Camera, Brain, Repeat, Trophy } from "lucide-react";
+import { motion } from "framer-motion";
 
 const steps = [
   {
@@ -39,7 +40,13 @@ export const HowItWorks = () => {
       
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Section header */}
-        <div className="text-center mb-20">
+        <motion.div
+          className="text-center mb-20"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 px-5 py-2 rounded-full mb-6">
             Simple Process
           </span>
@@ -49,12 +56,19 @@ export const HowItWorks = () => {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             From notes to knowledge in four simple steps
           </p>
-        </div>
+        </motion.div>
 
         {/* Steps */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
-            <div key={step.step} className="relative group">
+            <motion.div
+              key={step.step}
+              className="relative group"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.45, delay: index * 0.1, ease: "easeOut" }}
+            >
               {/* Connector line */}
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-14 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-primary/30 to-transparent" />
@@ -78,7 +92,7 @@ export const HowItWorks = () => {
                   {step.description}
                 </p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
