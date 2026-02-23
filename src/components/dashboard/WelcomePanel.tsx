@@ -1,5 +1,6 @@
 import { User } from "@supabase/supabase-js";
 import { MessageSquare, ScanLine, FileText, Sparkles, ArrowRight, BookOpen, Gamepad2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz";
 
@@ -59,7 +60,12 @@ export const WelcomePanel = ({ user, setActivePanel }: WelcomePanelProps) => {
   return (
     <div className="max-w-5xl mx-auto">
       {/* Welcome message */}
-      <div className="mb-10">
+      <motion.div
+        className="mb-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
         <div className="flex items-center gap-2 mb-3">
           <div className="h-1 w-8 rounded-full bg-gradient-to-r from-primary to-accent" />
           <span className="text-sm font-semibold text-primary uppercase tracking-wider">Dashboard</span>
@@ -70,14 +76,17 @@ export const WelcomePanel = ({ user, setActivePanel }: WelcomePanelProps) => {
         <p className="text-muted-foreground text-lg">
           What would you like to learn today?
         </p>
-      </div>
+      </motion.div>
 
       {/* Quick actions - 2+3 grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-        {features.map((feature) => (
-          <button
+        {features.map((feature, index) => (
+          <motion.button
             key={feature.id}
             onClick={() => setActivePanel(feature.id)}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 + index * 0.08, ease: "easeOut" }}
             className={`group relative p-6 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 ${feature.bgGlow}`}
           >
             <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
@@ -88,12 +97,17 @@ export const WelcomePanel = ({ user, setActivePanel }: WelcomePanelProps) => {
               <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
             </h3>
             <p className="text-sm text-muted-foreground">{feature.description}</p>
-          </button>
+          </motion.button>
         ))}
       </div>
 
       {/* Tips section */}
-      <div className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6">
+      <motion.div
+        className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.5, ease: "easeOut" }}
+      >
         <div className="flex items-center gap-2 mb-5">
           <Sparkles className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-semibold text-foreground">Getting Started</h2>
@@ -116,7 +130,7 @@ export const WelcomePanel = ({ user, setActivePanel }: WelcomePanelProps) => {
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
