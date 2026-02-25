@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Medal, Crown, Grid3X3, Zap } from "lucide-react";
+import { Trophy, Medal, Crown, Grid3X3, Zap, Layers, Type, Calculator } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LeaderboardEntry {
@@ -69,6 +69,24 @@ const gameConfig = {
     gradient: "from-emerald-500 to-cyan-500",
     bgGradient: "from-emerald-50 to-cyan-50 dark:from-emerald-950/30 dark:to-cyan-950/30",
     borderColor: "border-emerald-200 dark:border-emerald-800",
+  },
+  memory: {
+    icon: Layers,
+    gradient: "from-blue-500 to-purple-500",
+    bgGradient: "from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30",
+    borderColor: "border-blue-200 dark:border-blue-800",
+  },
+  wordscramble: {
+    icon: Type,
+    gradient: "from-amber-500 to-lime-500",
+    bgGradient: "from-amber-50 to-lime-50 dark:from-amber-950/30 dark:to-lime-950/30",
+    borderColor: "border-amber-200 dark:border-amber-800",
+  },
+  mathrush: {
+    icon: Calculator,
+    gradient: "from-cyan-500 to-blue-500",
+    bgGradient: "from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30",
+    borderColor: "border-cyan-200 dark:border-cyan-800",
   },
 };
 
@@ -147,7 +165,7 @@ export const Leaderboard = () => {
       </div>
 
       <Tabs defaultValue="sudoku" className="w-full">
-        <TabsList className="w-full grid grid-cols-3 mb-4">
+        <TabsList className="w-full grid grid-cols-6 mb-4">
           <TabsTrigger value="sudoku" className="text-xs gap-1">
             <Grid3X3 className="w-3 h-3" />
             Sudoku
@@ -160,6 +178,18 @@ export const Leaderboard = () => {
             <Zap className="w-3 h-3" />
             Zip
           </TabsTrigger>
+          <TabsTrigger value="memory" className="text-xs gap-1">
+            <Layers className="w-3 h-3" />
+            Memory
+          </TabsTrigger>
+          <TabsTrigger value="wordscramble" className="text-xs gap-1">
+            <Type className="w-3 h-3" />
+            Words
+          </TabsTrigger>
+          <TabsTrigger value="mathrush" className="text-xs gap-1">
+            <Calculator className="w-3 h-3" />
+            Math
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sudoku" className="mt-0">
@@ -170,6 +200,15 @@ export const Leaderboard = () => {
         </TabsContent>
         <TabsContent value="zip" className="mt-0">
           <LeaderboardList gameType="zip" />
+        </TabsContent>
+        <TabsContent value="memory" className="mt-0">
+          <LeaderboardList gameType="memory" />
+        </TabsContent>
+        <TabsContent value="wordscramble" className="mt-0">
+          <LeaderboardList gameType="wordscramble" />
+        </TabsContent>
+        <TabsContent value="mathrush" className="mt-0">
+          <LeaderboardList gameType="mathrush" />
         </TabsContent>
       </Tabs>
     </Card>
