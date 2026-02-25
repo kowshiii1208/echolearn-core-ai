@@ -175,7 +175,7 @@ export const useDailyChallengeStatus = () => {
     queryKey: ["daily-challenge-status", today],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { sudoku: false, queens: false, zip: false };
+      if (!user) return { sudoku: false, queens: false, zip: false, memory: false, wordscramble: false, mathrush: false };
 
       const { data, error } = await supabase
         .from("game_scores")
@@ -190,6 +190,9 @@ export const useDailyChallengeStatus = () => {
         sudoku: data.some((s) => s.game_type === "sudoku"),
         queens: data.some((s) => s.game_type === "queens"),
         zip: data.some((s) => s.game_type === "zip"),
+        memory: data.some((s) => s.game_type === "memory"),
+        wordscramble: data.some((s) => s.game_type === "wordscramble"),
+        mathrush: data.some((s) => s.game_type === "mathrush"),
       };
 
       return completed;

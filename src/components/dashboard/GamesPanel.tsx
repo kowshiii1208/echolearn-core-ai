@@ -1,6 +1,9 @@
 import { SudokuGame } from "@/components/games/SudokuGame";
 import { QueensGame } from "@/components/games/QueensGame";
 import { ZipGame } from "@/components/games/ZipGame";
+import { MemoryMatchGame } from "@/components/games/MemoryMatchGame";
+import { WordScrambleGame } from "@/components/games/WordScrambleGame";
+import { MathRushGame } from "@/components/games/MathRushGame";
 import { Leaderboard } from "@/components/games/Leaderboard";
 import { Gamepad2, Calendar, CheckCircle, Flame } from "lucide-react";
 import { useDailyChallengeStatus, useGameStreak } from "@/hooks/useGameScores";
@@ -11,7 +14,7 @@ export const GamesPanel = () => {
   const { data: streak } = useGameStreak();
 
   const completedCount = dailyStatus 
-    ? [dailyStatus.sudoku, dailyStatus.queens, dailyStatus.zip].filter(Boolean).length 
+    ? [dailyStatus.sudoku, dailyStatus.queens, dailyStatus.zip, dailyStatus.memory, dailyStatus.wordscramble, dailyStatus.mathrush].filter(Boolean).length 
     : 0;
 
   return (
@@ -54,7 +57,7 @@ export const GamesPanel = () => {
               <Calendar className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               <span className="font-medium text-amber-700 dark:text-amber-300 hidden sm:inline">Daily</span>
               <div className="flex gap-1">
-                {[dailyStatus.sudoku, dailyStatus.queens, dailyStatus.zip].map((completed, i) => (
+                {[dailyStatus.sudoku, dailyStatus.queens, dailyStatus.zip, dailyStatus.memory, dailyStatus.wordscramble, dailyStatus.mathrush].map((completed, i) => (
                   <div
                     key={i}
                     className={cn(
@@ -69,7 +72,7 @@ export const GamesPanel = () => {
                 ))}
               </div>
               <span className="text-sm text-amber-600 dark:text-amber-400">
-                {completedCount}/3
+                {completedCount}/6
               </span>
             </div>
           )}
@@ -80,6 +83,9 @@ export const GamesPanel = () => {
         <SudokuGame />
         <QueensGame />
         <ZipGame />
+        <MemoryMatchGame />
+        <WordScrambleGame />
+        <MathRushGame />
       </div>
 
       <div className="mt-6">
