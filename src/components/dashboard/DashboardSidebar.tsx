@@ -65,7 +65,7 @@ export const DashboardSidebar = ({
                 key={item.id}
                 variant={activePanel === item.id ? "secondary" : "ghost"}
                 className={cn(
-                  "w-full justify-start gap-3 h-11 rounded-xl font-medium transition-all duration-200",
+                  "group w-full justify-start gap-3 h-11 rounded-xl font-medium transition-all duration-200",
                   activePanel === item.id 
                     ? "bg-primary/10 text-primary border border-primary/20 shadow-sm hover:bg-primary/15" 
                     : "hover:bg-muted/50"
@@ -75,8 +75,16 @@ export const DashboardSidebar = ({
                   setIsOpen(false);
                 }}
               >
-                <item.icon className="w-5 h-5" />
-                {item.label}
+                <item.icon className={cn(
+                  "w-5 h-5 transition-transform duration-300",
+                  activePanel !== item.id && "group-hover:scale-125 group-hover:rotate-[-8deg]"
+                )} />
+                <span className={cn(
+                  "transition-transform duration-200",
+                  activePanel !== item.id && "group-hover:translate-x-0.5"
+                )}>
+                  {item.label}
+                </span>
               </Button>
             ))}
           </nav>
