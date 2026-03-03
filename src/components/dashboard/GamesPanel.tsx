@@ -1,6 +1,6 @@
-import { SudokuGame } from "@/components/games/SudokuGame";
-import { QueensGame } from "@/components/games/QueensGame";
-import { ZipGame } from "@/components/games/ZipGame";
+import { ColorMatchGame } from "@/components/games/ColorMatchGame";
+import { PatternSequenceGame } from "@/components/games/PatternSequenceGame";
+import { ReactionTimeGame } from "@/components/games/ReactionTimeGame";
 import { MemoryMatchGame } from "@/components/games/MemoryMatchGame";
 import { WordScrambleGame } from "@/components/games/WordScrambleGame";
 import { MathRushGame } from "@/components/games/MathRushGame";
@@ -14,7 +14,7 @@ export const GamesPanel = () => {
   const { data: streak } = useGameStreak();
 
   const completedCount = dailyStatus 
-    ? [dailyStatus.sudoku, dailyStatus.queens, dailyStatus.zip, dailyStatus.memory, dailyStatus.wordscramble, dailyStatus.mathrush].filter(Boolean).length 
+    ? [dailyStatus.colormatch, dailyStatus.pattern, dailyStatus.reaction, dailyStatus.memory, dailyStatus.wordscramble, dailyStatus.mathrush].filter(Boolean).length 
     : 0;
 
   return (
@@ -31,7 +31,6 @@ export const GamesPanel = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Streak Display */}
           {streak && streak.current_streak > 0 && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 border border-orange-200 dark:border-orange-800">
               <Flame className="w-5 h-5 text-orange-500" />
@@ -51,13 +50,12 @@ export const GamesPanel = () => {
             </div>
           )}
 
-          {/* Daily Challenge Progress */}
           {dailyStatus && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 border border-amber-200 dark:border-amber-800">
               <Calendar className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               <span className="font-medium text-amber-700 dark:text-amber-300 hidden sm:inline">Daily</span>
               <div className="flex gap-1">
-                {[dailyStatus.sudoku, dailyStatus.queens, dailyStatus.zip, dailyStatus.memory, dailyStatus.wordscramble, dailyStatus.mathrush].map((completed, i) => (
+                {[dailyStatus.colormatch, dailyStatus.pattern, dailyStatus.reaction, dailyStatus.memory, dailyStatus.wordscramble, dailyStatus.mathrush].map((completed, i) => (
                   <div
                     key={i}
                     className={cn(
@@ -80,9 +78,9 @@ export const GamesPanel = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <SudokuGame />
-        <QueensGame />
-        <ZipGame />
+        <ColorMatchGame />
+        <PatternSequenceGame />
+        <ReactionTimeGame />
         <MemoryMatchGame />
         <WordScrambleGame />
         <MathRushGame />
