@@ -144,7 +144,7 @@ export const ChatPreview = () => {
                   {isTyping && (
                     <div className="flex gap-3 animate-fade-in">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center flex-shrink-0 shadow-md">
-                        <Sparkles className="w-4 h-4 text-white" />
+                        <Brain className="w-4 h-4 text-white" />
                       </div>
                       <div className="bg-secondary/80 border border-border/30 rounded-2xl rounded-tl-sm px-4 py-3">
                         <div className="flex gap-1.5">
