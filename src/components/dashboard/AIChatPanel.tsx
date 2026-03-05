@@ -259,7 +259,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
               >
                 {message.role === "assistant" && (
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 shadow-md">
-                    <Sparkles className="w-4 h-4 text-primary-foreground" />
+                    <Brain className="w-4 h-4 text-primary-foreground" />
                   </div>
                 )}
                 <div
