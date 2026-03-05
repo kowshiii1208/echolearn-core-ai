@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Sparkles, User, CheckCircle2 } from "lucide-react";
+import { Send, Brain, User, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const demoMessages = [
