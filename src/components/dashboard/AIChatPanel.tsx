@@ -294,7 +294,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
             className="flex gap-3"
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 shadow-md">
-              <Sparkles className="w-4 h-4 text-primary-foreground animate-pulse" />
+              <Brain className="w-4 h-4 text-primary-foreground animate-pulse" />
             </div>
             <div className="bg-secondary/70 border border-border/30 rounded-2xl rounded-tl-sm px-5 py-4 backdrop-blur-sm">
               <div className="flex gap-1.5">
