@@ -126,7 +126,7 @@ export const ChatPreview = () => {
                         {message.role === "user" ? (
                           <User className="w-4 h-4 text-white" />
                         ) : (
-                          <Sparkles className="w-4 h-4 text-white" />
+                          <Brain className="w-4 h-4 text-white" />
                         )}
                       </div>
                       <div 
