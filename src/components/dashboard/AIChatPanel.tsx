@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Sparkles, User as UserIcon, Trash2, BookOpen, Lightbulb, FlaskConical } from "lucide-react";
+import { Send, Brain, User as UserIcon, Trash2, BookOpen, Lightbulb, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
