@@ -179,7 +179,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary via-primary/80 to-accent flex items-center justify-center shadow-glow"
           >
-            <Sparkles className="w-6 h-6 text-primary-foreground" />
+            <Brain className="w-6 h-6 text-primary-foreground" />
           </motion.div>
           <div>
             <h2 className="text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
