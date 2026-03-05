@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Sparkles, User, CheckCircle2 } from "lucide-react";
+import { Send, Brain, User, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const demoMessages = [
@@ -61,7 +61,7 @@ export const ChatPreview = () => {
           {/* Text content */}
           <div className="order-2 lg:order-1">
             <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 px-5 py-2 rounded-full mb-6">
-              <Sparkles className="w-3.5 h-3.5" />
+              <Brain className="w-3.5 h-3.5" />
               Conversational AI
             </span>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-6 tracking-tight">
@@ -98,7 +98,7 @@ export const ChatPreview = () => {
                 {/* Chat header */}
                 <div className="flex items-center gap-3 pb-4 border-b border-border/50 mb-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-5 h-5 text-white" />
+                    <Brain className="w-5 h-5 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground">EchoMind Tutor</h4>
@@ -126,7 +126,7 @@ export const ChatPreview = () => {
                         {message.role === "user" ? (
                           <User className="w-4 h-4 text-white" />
                         ) : (
-                          <Sparkles className="w-4 h-4 text-white" />
+                          <Brain className="w-4 h-4 text-white" />
                         )}
                       </div>
                       <div 
@@ -144,7 +144,7 @@ export const ChatPreview = () => {
                   {isTyping && (
                     <div className="flex gap-3 animate-fade-in">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center flex-shrink-0 shadow-md">
-                        <Sparkles className="w-4 h-4 text-white" />
+                        <Brain className="w-4 h-4 text-white" />
                       </div>
                       <div className="bg-secondary/80 border border-border/30 rounded-2xl rounded-tl-sm px-4 py-3">
                         <div className="flex gap-1.5">

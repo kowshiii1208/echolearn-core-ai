@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Sparkles, User as UserIcon, Trash2, BookOpen, Lightbulb, FlaskConical } from "lucide-react";
+import { Send, Brain, User as UserIcon, Trash2, BookOpen, Lightbulb, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -179,7 +179,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary via-primary/80 to-accent flex items-center justify-center shadow-glow"
           >
-            <Sparkles className="w-6 h-6 text-primary-foreground" />
+            <Brain className="w-6 h-6 text-primary-foreground" />
           </motion.div>
           <div>
             <h2 className="text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -206,7 +206,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
               transition={{ type: "spring", duration: 0.8 }}
               className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary via-primary/80 to-accent flex items-center justify-center mb-6 shadow-glow"
             >
-              <Sparkles className="w-10 h-10 text-primary-foreground" />
+              <Brain className="w-10 h-10 text-primary-foreground" />
             </motion.div>
             <motion.h3
               initial={{ opacity: 0, y: 10 }}
@@ -259,7 +259,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
               >
                 {message.role === "assistant" && (
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 shadow-md">
-                    <Sparkles className="w-4 h-4 text-primary-foreground" />
+                    <Brain className="w-4 h-4 text-primary-foreground" />
                   </div>
                 )}
                 <div
@@ -294,7 +294,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
             className="flex gap-3"
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 shadow-md">
-              <Sparkles className="w-4 h-4 text-primary-foreground animate-pulse" />
+              <Brain className="w-4 h-4 text-primary-foreground animate-pulse" />
             </div>
             <div className="bg-secondary/70 border border-border/30 rounded-2xl rounded-tl-sm px-5 py-4 backdrop-blur-sm">
               <div className="flex gap-1.5">
