@@ -206,7 +206,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
               transition={{ type: "spring", duration: 0.8 }}
               className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary via-primary/80 to-accent flex items-center justify-center mb-6 shadow-glow"
             >
-              <Sparkles className="w-10 h-10 text-primary-foreground" />
+              <Brain className="w-10 h-10 text-primary-foreground" />
             </motion.div>
             <motion.h3
               initial={{ opacity: 0, y: 10 }}
