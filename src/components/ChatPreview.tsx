@@ -98,7 +98,7 @@ export const ChatPreview = () => {
                 {/* Chat header */}
                 <div className="flex items-center gap-3 pb-4 border-b border-border/50 mb-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-5 h-5 text-white" />
+                    <Brain className="w-5 h-5 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground">EchoMind Tutor</h4>
