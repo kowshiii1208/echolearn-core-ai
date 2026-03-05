@@ -61,7 +61,7 @@ export const ChatPreview = () => {
           {/* Text content */}
           <div className="order-2 lg:order-1">
             <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 px-5 py-2 rounded-full mb-6">
-              <Sparkles className="w-3.5 h-3.5" />
+              <Brain className="w-3.5 h-3.5" />
               Conversational AI
             </span>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-6 tracking-tight">
