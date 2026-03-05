@@ -101,7 +101,7 @@ export const ChatPreview = () => {
                     <Sparkles className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-foreground">EchoLearn Tutor</h4>
+                    <h4 className="font-semibold text-foreground">EchoMind Tutor</h4>
                     <div className="flex items-center gap-1.5">
                       <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                       <p className="text-xs text-muted-foreground">Always here to help</p>

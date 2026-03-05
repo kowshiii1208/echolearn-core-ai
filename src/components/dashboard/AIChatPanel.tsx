@@ -183,7 +183,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
           </motion.div>
           <div>
             <h2 className="text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              EchoLearn Tutor
+              EchoMind
             </h2>
             <p className="text-sm text-muted-foreground">Your AI-powered study companion</p>
           </div>
