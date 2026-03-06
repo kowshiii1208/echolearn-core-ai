@@ -7,11 +7,12 @@ import {
   X,
   Gamepad2,
   BookOpen,
-  Sparkles
+  Sparkles,
+  GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz";
+type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz" | "resources";
 
 interface DashboardSidebarProps {
   activePanel: ActivePanel;
@@ -27,6 +28,7 @@ const menuItems = [
   { id: "notes" as const, label: "My Notes", icon: FileText },
   { id: "games" as const, label: "Brain Games", icon: Gamepad2 },
   { id: "quiz" as const, label: "Quizzes", icon: BookOpen },
+  { id: "resources" as const, label: "Resources", icon: GraduationCap },
 ];
 
 export const DashboardSidebar = ({ 
