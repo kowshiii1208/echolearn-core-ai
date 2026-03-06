@@ -63,17 +63,17 @@ Include 6-8 items per category. Use real, well-known courses and resources that 
 
 Make sure all URLs are real and point to actual courses/resources on major platforms.`;
 
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-    const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')!;
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-proxy`, {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'user', content: prompt }
         ],
