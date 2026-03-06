@@ -28,6 +28,7 @@ const menuItems = [
   { id: "notes" as const, label: "My Notes", icon: FileText },
   { id: "games" as const, label: "Brain Games", icon: Gamepad2 },
   { id: "quiz" as const, label: "Quizzes", icon: BookOpen },
+  { id: "resources" as const, label: "Resources", icon: GraduationCap },
 ];
 
 export const DashboardSidebar = ({ 

@@ -86,6 +86,7 @@ const Dashboard = () => {
           {activePanel === "notes" && <NotesPanel user={user} />}
           {activePanel === "games" && <GamesPanel />}
           {activePanel === "quiz" && <QuizPanel />}
+          {activePanel === "resources" && <ResourcesPanel />}
         </main>
       </div>
     </div>
