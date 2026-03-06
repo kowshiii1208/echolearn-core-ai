@@ -11,8 +11,9 @@ import { NotesPanel } from "@/components/dashboard/NotesPanel";
 import { WelcomePanel } from "@/components/dashboard/WelcomePanel";
 import { GamesPanel } from "@/components/dashboard/GamesPanel";
 import { QuizPanel } from "@/components/dashboard/QuizPanel";
+import { ResourcesPanel } from "@/components/dashboard/ResourcesPanel";
 
-type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz";
+type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz" | "resources";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
