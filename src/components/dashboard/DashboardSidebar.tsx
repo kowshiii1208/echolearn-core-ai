@@ -7,7 +7,8 @@ import {
   X,
   Gamepad2,
   BookOpen,
-  Sparkles
+  Sparkles,
+  GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
