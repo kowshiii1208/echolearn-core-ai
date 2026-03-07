@@ -49,6 +49,63 @@ export const ImageScannerPanel = ({ user }: ImageScannerPanelProps) => {
     setAiExplanation(null);
   };
 
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setIsCameraOpen(true);
+    } catch (err) {
+      toast({ title: "Camera error", description: "Could not access camera. Please check permissions.", variant: "destructive" });
+    }
+  };
+
+  const stopCamera = useCallback(() => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setIsCameraOpen(false);
+  }, []);
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d")?.drawImage(video, 0, 0);
+
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+    canvas.toBlob((blob) => {
+      if (blob) setSelectedFile(new File([blob], `scan-${Date.now()}.jpg`, { type: "image/jpeg" }));
+    }, "image/jpeg", 0.9);
+
+    setSelectedImage(dataUrl);
+    setExtractedText(null);
+    setAiExplanation(null);
+    stopCamera();
+  };
+
+  const switchCamera = async () => {
+    stopCamera();
+    const newMode = facingMode === "environment" ? "user" : "environment";
+    setFacingMode(newMode);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: newMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      });
+      streamRef.current = stream;
+      if (videoRef.current) videoRef.current.srcObject = stream;
+      setIsCameraOpen(true);
+    } catch {
+      toast({ title: "Camera error", description: "Could not switch camera.", variant: "destructive" });
+    }
+  };
+
   const handleScan = async () => {
     if (!selectedImage) return;
 
