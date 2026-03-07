@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { 
-  MessageSquare, 
+  Brain, 
   ScanLine, 
   FileText, 
   Home,
