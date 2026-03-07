@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, ScanLine, FileText, X, Loader2, Brain, BookOpen, Save, Camera, SwitchCamera, XCircle } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface ImageScannerPanelProps {
   user: User;
@@ -162,7 +163,22 @@ export const ImageScannerPanel = ({ user }: ImageScannerPanelProps) => {
             messages: [
               {
                 role: "user",
-                content: `Please analyze the following content from my notes/textbook and provide a detailed explanation. If it contains a question or problem, solve it step by step. If it contains notes or concepts, explain them clearly with examples.\n\nContent:\n${text}`
+                content: `You are an expert tutor. Analyze the following content extracted from a student's notes or textbook and provide a clear, well-structured explanation using Markdown formatting.
+
+Rules:
+- Use ## headings to organize sections
+- Use **bold** for key terms and concepts
+- Use numbered lists for step-by-step solutions
+- Use bullet points for listing related ideas
+- Use \`code blocks\` for formulas or equations
+- Use > blockquotes for important definitions or theorems
+- Add a "💡 Key Takeaway" section at the end summarizing the main points
+- Keep language simple, clear, and student-friendly
+- If it's a math problem, show every step with clear reasoning
+- If it's conceptual notes, explain with real-world examples
+
+Content:
+${text}`
               }
             ]
           }),
@@ -439,10 +455,20 @@ export const ImageScannerPanel = ({ user }: ImageScannerPanelProps) => {
                 className="bg-card border-border"
               />
               
-              <div className="bg-card border border-border rounded-2xl p-4 max-h-80 overflow-y-auto">
-                <p className="whitespace-pre-wrap text-sm text-foreground leading-relaxed">
-                  {aiExplanation || "Generating explanation..."}
-                </p>
+              <div className="bg-card border border-border rounded-2xl p-5 max-h-[28rem] overflow-y-auto prose prose-sm dark:prose-invert max-w-none
+                prose-headings:text-foreground prose-headings:font-display prose-headings:mt-4 prose-headings:mb-2
+                prose-p:text-foreground/90 prose-p:leading-relaxed prose-p:mb-3
+                prose-strong:text-primary prose-strong:font-semibold
+                prose-li:text-foreground/90 prose-li:my-0.5
+                prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:py-1 prose-blockquote:px-3 prose-blockquote:not-italic
+                prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono
+                prose-pre:bg-muted prose-pre:rounded-xl prose-pre:border prose-pre:border-border
+                prose-hr:border-border prose-hr:my-4">
+                {aiExplanation ? (
+                  <ReactMarkdown>{aiExplanation}</ReactMarkdown>
+                ) : (
+                  <p className="text-muted-foreground animate-pulse">Generating explanation...</p>
+                )}
               </div>
               
               <div className="flex flex-col gap-2">
