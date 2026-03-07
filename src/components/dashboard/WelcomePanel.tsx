@@ -1,8 +1,8 @@
 import { User } from "@supabase/supabase-js";
-import { MessageSquare, ScanLine, FileText, Sparkles, ArrowRight, BookOpen, Gamepad2 } from "lucide-react";
+import { MessageSquare, ScanLine, FileText, Sparkles, ArrowRight, BookOpen, Gamepad2, GraduationCap, Brain } from "lucide-react";
 import { motion } from "framer-motion";
 
-type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz";
+type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz" | "resources";
 
 interface WelcomePanelProps {
   user: User;
@@ -11,10 +11,18 @@ interface WelcomePanelProps {
 
 const features = [
   {
+    id: "resources" as const,
+    title: "Resources",
+    description: "Explore AI-curated courses and study materials",
+    icon: GraduationCap,
+    gradient: "from-primary to-accent",
+    bgGlow: "group-hover:shadow-[0_0_30px_hsl(195_35%_42%/0.15)]",
+  },
+  {
     id: "chat" as const,
-    title: "AI Tutor",
+    title: "EchoMind",
     description: "Get instant explanations and help with any topic",
-    icon: MessageSquare,
+    icon: Brain,
     gradient: "from-primary to-primary/70",
     bgGlow: "group-hover:shadow-[0_0_30px_hsl(195_35%_42%/0.15)]",
   },
@@ -27,12 +35,12 @@ const features = [
     bgGlow: "group-hover:shadow-[0_0_30px_hsl(200_85%_8%/0.15)]",
   },
   {
-    id: "notes" as const,
-    title: "My Notes",
-    description: "Access all your saved notes and scans",
-    icon: FileText,
+    id: "quiz" as const,
+    title: "Quizzes",
+    description: "Test your knowledge across categories",
+    icon: BookOpen,
     gradient: "from-primary/80 to-accent",
-    bgGlow: "group-hover:shadow-[0_0_30px_hsl(195_35%_42%/0.12)]",
+    bgGlow: "group-hover:shadow-[0_0_30px_hsl(195_35%_42%/0.15)]",
   },
   {
     id: "games" as const,
@@ -43,12 +51,12 @@ const features = [
     bgGlow: "group-hover:shadow-[0_0_30px_hsl(200_85%_8%/0.12)]",
   },
   {
-    id: "quiz" as const,
-    title: "Quizzes",
-    description: "Test your knowledge across categories",
-    icon: BookOpen,
-    gradient: "from-primary to-accent",
-    bgGlow: "group-hover:shadow-[0_0_30px_hsl(195_35%_42%/0.15)]",
+    id: "notes" as const,
+    title: "My Notes",
+    description: "Access all your saved notes and scans",
+    icon: FileText,
+    gradient: "from-primary to-accent/80",
+    bgGlow: "group-hover:shadow-[0_0_30px_hsl(195_35%_42%/0.12)]",
   },
 ];
 
