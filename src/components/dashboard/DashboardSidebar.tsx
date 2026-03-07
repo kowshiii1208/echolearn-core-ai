@@ -99,7 +99,7 @@ export const DashboardSidebar = ({
                 <p className="text-sm font-semibold text-foreground">Pro Tip</p>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Use the AI Tutor to explain concepts from your scanned notes!
+                Use EchoMind to explain concepts from your scanned notes!
               </p>
             </div>
           </div>
