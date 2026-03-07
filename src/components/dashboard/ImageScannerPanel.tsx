@@ -163,7 +163,22 @@ export const ImageScannerPanel = ({ user }: ImageScannerPanelProps) => {
             messages: [
               {
                 role: "user",
-                content: `Please analyze the following content from my notes/textbook and provide a detailed explanation. If it contains a question or problem, solve it step by step. If it contains notes or concepts, explain them clearly with examples.\n\nContent:\n${text}`
+                content: `You are an expert tutor. Analyze the following content extracted from a student's notes or textbook and provide a clear, well-structured explanation using Markdown formatting.
+
+Rules:
+- Use ## headings to organize sections
+- Use **bold** for key terms and concepts
+- Use numbered lists for step-by-step solutions
+- Use bullet points for listing related ideas
+- Use \`code blocks\` for formulas or equations
+- Use > blockquotes for important definitions or theorems
+- Add a "💡 Key Takeaway" section at the end summarizing the main points
+- Keep language simple, clear, and student-friendly
+- If it's a math problem, show every step with clear reasoning
+- If it's conceptual notes, explain with real-world examples
+
+Content:
+${text}`
               }
             ]
           }),
