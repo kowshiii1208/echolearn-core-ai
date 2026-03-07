@@ -1,10 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, ScanLine, FileText, X, Loader2, Brain, BookOpen, Save } from "lucide-react";
+import { Upload, ScanLine, FileText, X, Loader2, Brain, BookOpen, Save, Camera, SwitchCamera, XCircle } from "lucide-react";
 
 interface ImageScannerPanelProps {
   user: User;
@@ -19,7 +19,12 @@ export const ImageScannerPanel = ({ user }: ImageScannerPanelProps) => {
   const [isExplaining, setIsExplaining] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [title, setTitle] = useState("");
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const { toast } = useToast();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,6 +47,63 @@ export const ImageScannerPanel = ({ user }: ImageScannerPanelProps) => {
     reader.readAsDataURL(file);
     setExtractedText(null);
     setAiExplanation(null);
+  };
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setIsCameraOpen(true);
+    } catch (err) {
+      toast({ title: "Camera error", description: "Could not access camera. Please check permissions.", variant: "destructive" });
+    }
+  };
+
+  const stopCamera = useCallback(() => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setIsCameraOpen(false);
+  }, []);
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d")?.drawImage(video, 0, 0);
+
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+    canvas.toBlob((blob) => {
+      if (blob) setSelectedFile(new File([blob], `scan-${Date.now()}.jpg`, { type: "image/jpeg" }));
+    }, "image/jpeg", 0.9);
+
+    setSelectedImage(dataUrl);
+    setExtractedText(null);
+    setAiExplanation(null);
+    stopCamera();
+  };
+
+  const switchCamera = async () => {
+    stopCamera();
+    const newMode = facingMode === "environment" ? "user" : "environment";
+    setFacingMode(newMode);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: newMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      });
+      streamRef.current = stream;
+      if (videoRef.current) videoRef.current.srcObject = stream;
+      setIsCameraOpen(true);
+    } catch {
+      toast({ title: "Camera error", description: "Could not switch camera.", variant: "destructive" });
+    }
   };
 
   const handleScan = async () => {
@@ -252,50 +314,80 @@ export const ImageScannerPanel = ({ user }: ImageScannerPanelProps) => {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Upload area */}
         <div className="space-y-4">
-          <div
-            className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-colors cursor-pointer ${
-              selectedImage ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-card"
-            }`}
-            onClick={() => !selectedImage && fileInputRef.current?.click()}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
+          {/* Hidden elements */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <canvas ref={canvasRef} className="hidden" />
 
-            {selectedImage ? (
-              <div className="relative">
-                <img
-                  src={selectedImage}
-                  alt="Selected"
-                  className="max-h-64 mx-auto rounded-lg object-contain"
-                />
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleClear();
-                  }}
-                >
-                  <X className="w-4 h-4" />
+          {/* Camera view */}
+          {isCameraOpen && (
+            <div className="relative border-2 border-primary rounded-2xl overflow-hidden bg-black">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full max-h-72 object-cover"
+              />
+              <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-3">
+                <Button size="icon" variant="secondary" className="rounded-full h-10 w-10 bg-background/80 backdrop-blur-sm" onClick={switchCamera}>
+                  <SwitchCamera className="w-5 h-5" />
+                </Button>
+                <Button size="lg" className="rounded-full h-14 w-14 bg-primary shadow-lg hover:scale-105 transition-transform" onClick={capturePhoto}>
+                  <Camera className="w-6 h-6 text-primary-foreground" />
+                </Button>
+                <Button size="icon" variant="secondary" className="rounded-full h-10 w-10 bg-background/80 backdrop-blur-sm" onClick={stopCamera}>
+                  <XCircle className="w-5 h-5" />
                 </Button>
               </div>
-            ) : (
-              <div className="py-8">
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Upload className="w-8 h-8 text-primary" />
-                </div>
-                <p className="text-foreground font-medium mb-1">Click to upload an image</p>
-                <p className="text-sm text-muted-foreground">or drag and drop</p>
-                <p className="text-xs text-muted-foreground mt-2">PNG, JPG up to 10MB</p>
+            </div>
+          )}
+
+          {/* Selected image preview */}
+          {selectedImage && !isCameraOpen && (
+            <div className="relative border-2 border-primary border-dashed rounded-2xl p-8 bg-primary/5">
+              <img
+                src={selectedImage}
+                alt="Selected"
+                className="max-h-64 mx-auto rounded-lg object-contain"
+              />
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute top-2 right-2"
+                onClick={handleClear}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+
+          {/* Upload / Camera buttons */}
+          {!selectedImage && !isCameraOpen && (
+            <div className="border-2 border-dashed border-border rounded-2xl p-8 text-center hover:border-primary/50 hover:bg-card transition-colors">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <ScanLine className="w-8 h-8 text-primary" />
               </div>
-            )}
-          </div>
+              <p className="text-foreground font-medium mb-1">Scan your notes</p>
+              <p className="text-sm text-muted-foreground mb-4">Use camera or upload an image</p>
+              <div className="flex gap-3 justify-center">
+                <Button variant="hero" onClick={startCamera} className="gap-2">
+                  <Camera className="w-4 h-4" />
+                  Open Camera
+                </Button>
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="gap-2">
+                  <Upload className="w-4 h-4" />
+                  Upload File
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">PNG, JPG up to 10MB</p>
+            </div>
+          )}
 
           {selectedImage && !extractedText && (
             <Button
