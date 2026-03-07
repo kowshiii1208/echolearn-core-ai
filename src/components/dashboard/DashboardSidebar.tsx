@@ -23,7 +23,7 @@ interface DashboardSidebarProps {
 
 const menuItems = [
   { id: "welcome" as const, label: "Home", icon: Home },
-  { id: "chat" as const, label: "AI Tutor", icon: MessageSquare },
+  { id: "chat" as const, label: "EchoMind", icon: Brain },
   { id: "scanner" as const, label: "Scan Notes", icon: ScanLine },
   { id: "notes" as const, label: "My Notes", icon: FileText },
   { id: "games" as const, label: "Brain Games", icon: Gamepad2 },
