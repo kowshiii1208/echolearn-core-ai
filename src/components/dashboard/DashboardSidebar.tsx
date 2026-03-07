@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { 
-  MessageSquare, 
+  Brain, 
   ScanLine, 
   FileText, 
   Home,
@@ -23,7 +23,7 @@ interface DashboardSidebarProps {
 
 const menuItems = [
   { id: "welcome" as const, label: "Home", icon: Home },
-  { id: "chat" as const, label: "AI Tutor", icon: MessageSquare },
+  { id: "chat" as const, label: "EchoMind", icon: Brain },
   { id: "scanner" as const, label: "Scan Notes", icon: ScanLine },
   { id: "notes" as const, label: "My Notes", icon: FileText },
   { id: "games" as const, label: "Brain Games", icon: Gamepad2 },
@@ -99,7 +99,7 @@ export const DashboardSidebar = ({
                 <p className="text-sm font-semibold text-foreground">Pro Tip</p>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Use the AI Tutor to explain concepts from your scanned notes!
+                Use EchoMind to explain concepts from your scanned notes!
               </p>
             </div>
           </div>
