@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, ScanLine, FileText, X, Loader2, Brain, BookOpen, Save, Camera, SwitchCamera, XCircle } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface ImageScannerPanelProps {
   user: User;
