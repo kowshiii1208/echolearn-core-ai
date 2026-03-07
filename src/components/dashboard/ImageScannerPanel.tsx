@@ -1,10 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, ScanLine, FileText, X, Loader2, Brain, BookOpen, Save } from "lucide-react";
+import { Upload, ScanLine, FileText, X, Loader2, Brain, BookOpen, Save, Camera, SwitchCamera, XCircle } from "lucide-react";
 
 interface ImageScannerPanelProps {
   user: User;
@@ -19,7 +19,12 @@ export const ImageScannerPanel = ({ user }: ImageScannerPanelProps) => {
   const [isExplaining, setIsExplaining] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [title, setTitle] = useState("");
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const { toast } = useToast();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
