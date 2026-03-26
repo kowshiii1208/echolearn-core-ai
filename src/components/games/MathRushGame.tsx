@@ -107,7 +107,7 @@ export const MathRushGame = () => {
   const [completionTime, setCompletionTime] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<number | null>(null); // selected option index
   const [seedBase, setSeedBase] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { toast } = useToast();
   const { bestScore, saveScore } = useGameScores("mathrush");
 

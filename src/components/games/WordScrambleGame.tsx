@@ -48,7 +48,7 @@ export const WordScrambleGame = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [completionTime, setCompletionTime] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const usedWordsRef = useRef<Set<string>>(new Set());
   const { toast } = useToast();

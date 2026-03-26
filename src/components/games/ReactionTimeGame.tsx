@@ -19,7 +19,7 @@ export const ReactionTimeGame = () => {
   const [currentRound, setCurrentRound] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const goTimeRef = useRef<number>(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { toast } = useToast();
   const { bestScore, saveScore } = useGameScores("reaction");
 

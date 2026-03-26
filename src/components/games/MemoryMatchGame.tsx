@@ -46,7 +46,7 @@ export const MemoryMatchGame = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [completionTime, setCompletionTime] = useState<number | null>(null);
   const [isChecking, setIsChecking] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { toast } = useToast();
   const { bestScore, saveScore } = useGameScores("memory");
 
