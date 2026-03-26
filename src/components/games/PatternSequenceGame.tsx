@@ -39,7 +39,7 @@ export const PatternSequenceGame = () => {
   const [wrongTile, setWrongTile] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [completionTime, setCompletionTime] = useState<number | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { toast } = useToast();
   const { bestScore, saveScore } = useGameScores("pattern");
 
