@@ -6,14 +6,14 @@ import { User, Session } from "@supabase/supabase-js";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { AIChatPanel } from "@/components/dashboard/AIChatPanel";
-import { ImageScannerPanel } from "@/components/dashboard/ImageScannerPanel";
+import { AIToolsPanel } from "@/components/dashboard/AIToolsPanel";
 import { NotesPanel } from "@/components/dashboard/NotesPanel";
 import { WelcomePanel } from "@/components/dashboard/WelcomePanel";
 import { GamesPanel } from "@/components/dashboard/GamesPanel";
 import { QuizPanel } from "@/components/dashboard/QuizPanel";
 import { ResourcesPanel } from "@/components/dashboard/ResourcesPanel";
 
-type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz" | "resources";
+type ActivePanel = "welcome" | "chat" | "tools" | "notes" | "games" | "quiz" | "resources";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
