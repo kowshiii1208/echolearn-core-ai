@@ -1,8 +1,8 @@
 import { User } from "@supabase/supabase-js";
-import { MessageSquare, ScanLine, FileText, Sparkles, ArrowRight, BookOpen, Gamepad2, GraduationCap, Brain } from "lucide-react";
+import { FileText, Sparkles, ArrowRight, BookOpen, Gamepad2, GraduationCap, Brain, Wrench } from "lucide-react";
 import { motion } from "framer-motion";
 
-type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz" | "resources";
+type ActivePanel = "welcome" | "chat" | "tools" | "notes" | "games" | "quiz" | "resources";
 
 interface WelcomePanelProps {
   user: User;
@@ -27,10 +27,10 @@ const features = [
     bgGlow: "group-hover:shadow-[0_0_30px_hsl(195_35%_42%/0.15)]",
   },
   {
-    id: "scanner" as const,
-    title: "Scan Notes",
-    description: "Upload photos of your notes for AI analysis",
-    icon: ScanLine,
+    id: "tools" as const,
+    title: "AI Tools",
+    description: "All your AI tools in one place — scan, write, code & more",
+    icon: Wrench,
     gradient: "from-accent to-primary",
     bgGlow: "group-hover:shadow-[0_0_30px_hsl(200_85%_8%/0.15)]",
   },

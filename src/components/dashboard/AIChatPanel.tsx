@@ -4,7 +4,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Brain, User as UserIcon, Trash2, BookOpen, Lightbulb, FlaskConical } from "lucide-react";
+import {
+  Send,
+  Brain,
+  User as UserIcon,
+  Trash2,
+  BookOpen,
+  Lightbulb,
+  FlaskConical,
+  Paperclip,
+  Image as ImageIcon,
+  X,
+  Copy,
+  Check,
+  Sparkles,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -13,43 +27,87 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  imageUrl?: string;
 }
 
 interface AIChatPanelProps {
   user: User;
 }
 
+// ----- Code block with copy button -----
+const CodeBlock = ({ inline, className, children, ...props }: any) => {
+  const [copied, setCopied] = useState(false);
+  const text = String(children).replace(/\n$/, "");
+
+  if (inline) {
+    return (
+      <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-foreground" {...props}>
+        {children}
+      </code>
+    );
+  }
+
+  const lang = /language-(\w+)/.exec(className || "")?.[1] || "code";
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <div className="relative group/code my-3 rounded-xl overflow-hidden border border-border/50 bg-muted/40">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-border/50 bg-muted/60">
+        <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+          {lang}
+        </span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <pre className="overflow-x-auto p-3 text-xs leading-relaxed">
+        <code className="font-mono text-foreground">{text}</code>
+      </pre>
+    </div>
+  );
+};
+
 export const AIChatPanel = ({ user }: AIChatPanelProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [attachedName, setAttachedName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Load chat history on mount
   useEffect(() => {
     const loadHistory = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("chat_messages")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: true })
         .limit(50);
 
-      if (data && !error) {
-        setMessages(data.map(msg => ({
-          id: msg.id,
-          role: msg.role as "user" | "assistant",
-          content: msg.content,
-        })));
+      if (data) {
+        setMessages(
+          data.map((msg) => ({
+            id: msg.id,
+            role: msg.role as "user" | "assistant",
+            content: msg.content,
+          }))
+        );
       }
     };
     loadHistory();
@@ -63,39 +121,75 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
     });
   };
 
+  const handleAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Only images supported", description: "Attach a PNG or JPG.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      toast({ title: "Too large", description: "Please attach an image under 8MB.", variant: "destructive" });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setAttachedImage(ev.target?.result as string);
+      setAttachedName(file.name);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const copyMessage = async (id: string, content: string) => {
+    await navigator.clipboard.writeText(content);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 1500);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && !attachedImage) || isLoading) return;
 
+    const userText = input.trim() || (attachedImage ? "Please analyze this image and explain what you see." : "");
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: "user",
-      content: input.trim(),
+      content: userText,
+      imageUrl: attachedImage || undefined,
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    const sentImage = attachedImage;
+    setAttachedImage(null);
+    setAttachedName(null);
     setIsLoading(true);
 
-    await saveMessage("user", userMessage.content);
+    await saveMessage("user", userText + (sentImage ? "\n\n[image attached]" : ""));
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-tutor`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            messages: messages.concat(userMessage).map(m => ({
-              role: m.role,
-              content: m.content,
-            })),
-          }),
+      // Build message payload — multimodal if image attached
+      const payloadMessages = messages.concat(userMessage).map((m) => {
+        if (m.role === "user" && m.imageUrl) {
+          return {
+            role: "user",
+            content: [
+              { type: "text", text: m.content || "Please analyze this image." },
+              { type: "image_url", image_url: { url: m.imageUrl } },
+            ],
+          };
         }
-      );
+        return { role: m.role, content: m.content };
+      });
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-tutor`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ messages: payloadMessages }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -107,16 +201,15 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
       let assistantContent = "";
       const assistantId = crypto.randomUUID();
 
-      setMessages(prev => [...prev, { id: assistantId, role: "assistant", content: "" }]);
+      setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
 
       if (reader) {
         let buffer = "";
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          
+
           buffer += decoder.decode(value, { stream: true });
-          
           let newlineIndex: number;
           while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
             const line = buffer.slice(0, newlineIndex).trim();
@@ -129,14 +222,12 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
               const content = parsed.choices?.[0]?.delta?.content;
               if (content) {
                 assistantContent += content;
-                setMessages(prev => 
-                  prev.map(m => 
-                    m.id === assistantId ? { ...m, content: assistantContent } : m
-                  )
+                setMessages((prev) =>
+                  prev.map((m) => (m.id === assistantId ? { ...m, content: assistantContent } : m))
                 );
               }
             } catch {
-              // Ignore parse errors
+              /* ignore */
             }
           }
         }
@@ -151,7 +242,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
         description: error.message || "Failed to get response",
         variant: "destructive",
       });
-      setMessages(prev => prev.filter(m => m.role !== "assistant" || m.content));
+      setMessages((prev) => prev.filter((m) => m.role !== "assistant" || m.content));
     } finally {
       setIsLoading(false);
     }
@@ -167,6 +258,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
     { icon: BookOpen, text: "Explain photosynthesis", color: "from-emerald-500 to-teal-500" },
     { icon: Lightbulb, text: "Help me with calculus", color: "from-amber-500 to-orange-500" },
     { icon: FlaskConical, text: "What is machine learning?", color: "from-violet-500 to-purple-500" },
+    { icon: ImageIcon, text: "Analyze an image of my notes", color: "from-sky-500 to-blue-500" },
   ];
 
   return (
@@ -182,10 +274,13 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
             <Brain className="w-6 h-6 text-primary-foreground" />
           </motion.div>
           <div>
-            <h2 className="text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h2 className="text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center gap-2">
               EchoMind
+              <span className="text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 uppercase">
+                Pro
+              </span>
             </h2>
-            <p className="text-sm text-muted-foreground">Your AI-powered study companion</p>
+            <p className="text-sm text-muted-foreground">Chat, attach images, get expert explanations</p>
           </div>
         </div>
         {messages.length > 0 && (
@@ -212,9 +307,9 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-xl font-display font-bold text-foreground mb-2"
+              className="text-2xl font-display font-bold text-foreground mb-2"
             >
-              What would you like to learn today?
+              How can I help you today?
             </motion.h3>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -222,9 +317,9 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
               transition={{ delay: 0.4 }}
               className="text-muted-foreground max-w-md mb-8"
             >
-              Ask me to explain concepts, solve problems, or help you understand your study materials.
+              Ask anything, paste code, or attach an image of your notes — I'll explain it step-by-step.
             </motion.p>
-            <div className="flex flex-wrap gap-3 justify-center">
+            <div className="flex flex-wrap gap-3 justify-center max-w-2xl">
               {suggestions.map((suggestion, i) => (
                 <motion.button
                   key={suggestion.text}
@@ -252,10 +347,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className={cn(
-                  "flex gap-3",
-                  message.role === "user" ? "justify-end" : "justify-start"
-                )}
+                className={cn("flex gap-3 group", message.role === "user" ? "justify-end" : "justify-start")}
               >
                 {message.role === "assistant" && (
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 shadow-md">
@@ -264,16 +356,43 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
                 )}
                 <div
                   className={cn(
-                    "max-w-[80%] rounded-2xl px-5 py-3.5",
+                    "max-w-[82%] rounded-2xl px-5 py-3.5 relative",
                     message.role === "user"
                       ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-tr-sm"
                       : "bg-secondary/70 text-secondary-foreground rounded-tl-sm border border-border/30 backdrop-blur-sm"
                   )}
                 >
+                  {message.imageUrl && (
+                    <img
+                      src={message.imageUrl}
+                      alt="attachment"
+                      className="rounded-lg mb-2 max-h-64 object-contain bg-background/20"
+                    />
+                  )}
                   {message.role === "assistant" ? (
-                    <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-display prose-headings:text-foreground prose-p:text-secondary-foreground prose-strong:text-foreground prose-li:text-secondary-foreground prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-xs prose-code:text-foreground prose-pre:bg-muted prose-pre:border prose-pre:border-border/30 prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
-                      <ReactMarkdown>{message.content}</ReactMarkdown>
-                    </div>
+                    <>
+                      <div
+                        className="prose prose-sm dark:prose-invert max-w-none
+                          prose-headings:font-display prose-headings:text-foreground prose-headings:mt-3 prose-headings:mb-2
+                          prose-p:text-secondary-foreground prose-p:leading-relaxed
+                          prose-strong:text-primary prose-strong:font-semibold
+                          prose-li:text-secondary-foreground prose-li:my-0.5
+                          prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:py-1 prose-blockquote:px-3 prose-blockquote:not-italic
+                          prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                          prose-hr:border-border"
+                      >
+                        <ReactMarkdown components={{ code: CodeBlock }}>{message.content}</ReactMarkdown>
+                      </div>
+                      {message.content && (
+                        <button
+                          onClick={() => copyMessage(message.id, message.content)}
+                          className="absolute -bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-full bg-card border border-border/50 text-muted-foreground hover:text-foreground shadow-sm"
+                        >
+                          {copiedId === message.id ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                          {copiedId === message.id ? "Copied" : "Copy"}
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <p className="whitespace-pre-wrap text-sm">{message.content}</p>
                   )}
@@ -288,11 +407,7 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
           </AnimatePresence>
         )}
         {isLoading && messages[messages.length - 1]?.role === "user" && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex gap-3"
-          >
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 shadow-md">
               <Brain className="w-4 h-4 text-primary-foreground animate-pulse" />
             </div>
@@ -308,12 +423,45 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Attachment preview */}
+      {attachedImage && (
+        <div className="mb-2 flex items-center gap-3 p-2 pr-3 rounded-xl bg-card border border-border/50">
+          <img src={attachedImage} alt="preview" className="w-12 h-12 rounded-lg object-cover" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-foreground truncate">{attachedName}</p>
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+              <Sparkles className="w-3 h-3" /> Will be analyzed with your message
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setAttachedImage(null);
+              setAttachedName(null);
+            }}
+            className="p-1 rounded-md hover:bg-muted text-muted-foreground"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Input */}
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-2 items-end">
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAttach} className="hidden" />
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          className="h-[52px] w-[52px] shrink-0 rounded-xl"
+          onClick={() => fileInputRef.current?.click()}
+          title="Attach image"
+        >
+          <Paperclip className="w-5 h-5" />
+        </Button>
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask me anything..."
+          placeholder="Ask anything, paste code, or attach an image..."
           className="min-h-[52px] max-h-32 resize-none bg-card/80 backdrop-blur-sm border-border/50 rounded-xl focus:border-primary/50 focus:ring-primary/20 transition-all"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -322,11 +470,11 @@ export const AIChatPanel = ({ user }: AIChatPanelProps) => {
             }
           }}
         />
-        <Button 
-          type="submit" 
-          size="icon" 
+        <Button
+          type="submit"
+          size="icon"
           className="h-[52px] w-[52px] shrink-0 rounded-xl bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg hover:shadow-glow transition-shadow"
-          disabled={!input.trim() || isLoading}
+          disabled={(!input.trim() && !attachedImage) || isLoading}
         >
           <Send className="w-5 h-5" />
         </Button>

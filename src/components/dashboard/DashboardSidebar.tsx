@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { 
   Brain, 
-  ScanLine, 
+  Wrench,
   FileText, 
   Home,
   X,
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz" | "resources";
+type ActivePanel = "welcome" | "chat" | "tools" | "notes" | "games" | "quiz" | "resources";
 
 interface DashboardSidebarProps {
   activePanel: ActivePanel;
@@ -24,7 +24,7 @@ interface DashboardSidebarProps {
 const menuItems = [
   { id: "welcome" as const, label: "Home", icon: Home },
   { id: "chat" as const, label: "EchoMind", icon: Brain },
-  { id: "scanner" as const, label: "Scan Notes", icon: ScanLine },
+  { id: "tools" as const, label: "AI Tools", icon: Wrench },
   { id: "notes" as const, label: "My Notes", icon: FileText },
   { id: "games" as const, label: "Brain Games", icon: Gamepad2 },
   { id: "quiz" as const, label: "Quizzes", icon: BookOpen },
