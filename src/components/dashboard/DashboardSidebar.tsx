@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { 
   Brain, 
-  ScanLine, 
+  Wrench,
   FileText, 
   Home,
   X,
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type ActivePanel = "welcome" | "chat" | "scanner" | "notes" | "games" | "quiz" | "resources";
+type ActivePanel = "welcome" | "chat" | "tools" | "notes" | "games" | "quiz" | "resources";
 
 interface DashboardSidebarProps {
   activePanel: ActivePanel;
