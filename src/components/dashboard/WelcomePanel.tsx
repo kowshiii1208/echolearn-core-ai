@@ -27,14 +27,6 @@ const features = [
     bgGlow: "group-hover:shadow-[0_0_30px_hsl(195_35%_42%/0.15)]",
   },
   {
-    id: "tools" as const,
-    title: "AI Tools",
-    description: "All your AI tools in one place — scan, write, code & more",
-    icon: Wrench,
-    gradient: "from-accent to-primary",
-    bgGlow: "group-hover:shadow-[0_0_30px_hsl(200_85%_8%/0.15)]",
-  },
-  {
     id: "quiz" as const,
     title: "Quizzes",
     description: "Test your knowledge across categories",
