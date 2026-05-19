@@ -6,7 +6,6 @@ import { User, Session } from "@supabase/supabase-js";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { AIChatPanel } from "@/components/dashboard/AIChatPanel";
-import { AIToolsPanel } from "@/components/dashboard/AIToolsPanel";
 import { NotesPanel } from "@/components/dashboard/NotesPanel";
 import { WelcomePanel } from "@/components/dashboard/WelcomePanel";
 import { GamesPanel } from "@/components/dashboard/GamesPanel";
