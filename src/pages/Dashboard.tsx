@@ -12,7 +12,7 @@ import { GamesPanel } from "@/components/dashboard/GamesPanel";
 import { QuizPanel } from "@/components/dashboard/QuizPanel";
 import { ResourcesPanel } from "@/components/dashboard/ResourcesPanel";
 
-type ActivePanel = "welcome" | "chat" | "tools" | "notes" | "games" | "quiz" | "resources";
+type ActivePanel = "welcome" | "chat" | "notes" | "games" | "quiz" | "resources";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
