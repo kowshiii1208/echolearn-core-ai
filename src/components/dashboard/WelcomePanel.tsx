@@ -1,8 +1,8 @@
 import { User } from "@supabase/supabase-js";
-import { FileText, Sparkles, ArrowRight, BookOpen, Gamepad2, GraduationCap, Brain, Wrench } from "lucide-react";
+import { FileText, Sparkles, ArrowRight, BookOpen, Gamepad2, GraduationCap, Brain } from "lucide-react";
 import { motion } from "framer-motion";
 
-type ActivePanel = "welcome" | "chat" | "tools" | "notes" | "games" | "quiz" | "resources";
+type ActivePanel = "welcome" | "chat" | "notes" | "games" | "quiz" | "resources";
 
 interface WelcomePanelProps {
   user: User;
