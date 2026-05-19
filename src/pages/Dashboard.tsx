@@ -6,14 +6,13 @@ import { User, Session } from "@supabase/supabase-js";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { AIChatPanel } from "@/components/dashboard/AIChatPanel";
-import { AIToolsPanel } from "@/components/dashboard/AIToolsPanel";
 import { NotesPanel } from "@/components/dashboard/NotesPanel";
 import { WelcomePanel } from "@/components/dashboard/WelcomePanel";
 import { GamesPanel } from "@/components/dashboard/GamesPanel";
 import { QuizPanel } from "@/components/dashboard/QuizPanel";
 import { ResourcesPanel } from "@/components/dashboard/ResourcesPanel";
 
-type ActivePanel = "welcome" | "chat" | "tools" | "notes" | "games" | "quiz" | "resources";
+type ActivePanel = "welcome" | "chat" | "notes" | "games" | "quiz" | "resources";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -82,7 +81,7 @@ const Dashboard = () => {
             <WelcomePanel user={user} setActivePanel={setActivePanel} />
           )}
           {activePanel === "chat" && <AIChatPanel user={user} />}
-          {activePanel === "tools" && <AIToolsPanel user={user} />}
+          
           {activePanel === "notes" && <NotesPanel user={user} />}
           {activePanel === "games" && <GamesPanel />}
           {activePanel === "quiz" && <QuizPanel />}
