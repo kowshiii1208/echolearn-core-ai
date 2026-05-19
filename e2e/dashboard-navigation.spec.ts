@@ -69,11 +69,16 @@ test.describe("Dashboard navigation after AI Tools removal", () => {
 
     for (const nav of order) {
       await sidebar.getByRole("button", { name: nav }).click();
-      // Just verify <main> renders *some* content for each panel
-      await expect.poll(
-        async () => ((await page.locator("main").textContent()) ?? "").trim().length,
-        { timeout: 7000 }
-      ).toBeGreaterThan(0);
+      // Wait briefly for the panel to mount; verify <main> renders non-empty content
+      try {
+        await expect.poll(
+          async () => ((await page.locator("main").textContent()) ?? "").trim().length,
+          { timeout: 7000, intervals: [200, 400, 800] }
+        ).toBeGreaterThan(0);
+      } catch (err) {
+        const html = await page.locator("main").innerHTML();
+        throw new Error(`Panel "${nav}" rendered empty. main innerHTML:\n${html.slice(0, 500)}`);
+      }
     }
 
     // Ignore noisy non-blocking errors (network probes, favicon, etc.)
