@@ -81,7 +81,7 @@ const Dashboard = () => {
             <WelcomePanel user={user} setActivePanel={setActivePanel} />
           )}
           {activePanel === "chat" && <AIChatPanel user={user} />}
-          {activePanel === "tools" && <AIToolsPanel user={user} />}
+          
           {activePanel === "notes" && <NotesPanel user={user} />}
           {activePanel === "games" && <GamesPanel />}
           {activePanel === "quiz" && <QuizPanel />}
